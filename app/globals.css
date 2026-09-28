@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #0f0f0f;
+  --foreground: #f5f0e8;
+  --accent: #c9a84c;
+  --accent-dark: #8b6914;
+  --surface: #1a1a1a;
+  --surface-2: #252525;
+  --border: #2e2e2e;
+  --text-muted: #888;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--surface);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+/* Markdown prose styles */
+.prose-peter p { margin-bottom: 1em; line-height: 1.8; }
+.prose-peter strong { color: var(--accent); }
+.prose-peter em { color: #d4c5a0; }
+.prose-peter ul { list-style: disc; padding-left: 1.5em; margin-bottom: 1em; }
+.prose-peter ol { list-style: decimal; padding-left: 1.5em; margin-bottom: 1em; }
+.prose-peter li { margin-bottom: 0.4em; }
+.prose-peter blockquote {
+  border-left: 3px solid var(--accent);
+  padding-left: 1em;
+  color: #d4c5a0;
+  font-style: italic;
+  margin: 1em 0;
+}
