@@ -159,6 +159,7 @@ export default function ChatPage() {
   const recognitionRef = useRef<ISpeechRecognition | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const skipNextAutoPushRef = useRef(false);
 
   // Cloud Sync: Fetch from Supabase by Email
   const pullFromCloud = async (emailToPull: string) => {
@@ -226,6 +227,22 @@ export default function ChatPage() {
   ) => {
     const k = (email || '').trim().toLowerCase();
     if (!k) return;
+
+    let finalProfile = { ...profileData };
+    if (!finalProfile.name || !finalProfile.name.trim()) {
+      try {
+        const saved = localStorage.getItem(PROFILE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed.name && parsed.name.trim()) {
+            finalProfile.name = parsed.name.trim();
+          }
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+
     try {
       setSyncStatus('syncing');
       await fetch('/api/sync', {
@@ -233,7 +250,7 @@ export default function ChatPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userKey: k,
-          profile: profileData,
+          profile: finalProfile,
           conversations: convsData,
           commitments: commsData,
           notes: notesData,
@@ -351,6 +368,10 @@ export default function ChatPage() {
     if (conversations.length > 0) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(conversations));
       if (authEmail) {
+        if (skipNextAutoPushRef.current) {
+          skipNextAutoPushRef.current = false;
+          return;
+        }
         pushToCloud(userProfile, conversations, commitments, personalNotes, authEmail);
       }
     }
@@ -893,21 +914,29 @@ export default function ChatPage() {
         return;
       }
 
+      skipNextAutoPushRef.current = true;
+
+      const studentName = authNameInput.trim();
+      let activeProfile: UserProfile = { name: studentName, occupation: '', goals: '', challenges: '' };
+
+      if (data.data?.profile && typeof data.data.profile === 'object') {
+        activeProfile = { ...activeProfile, ...data.data.profile };
+        if (!activeProfile.name && studentName) {
+          activeProfile.name = studentName;
+        }
+      } else if (studentName) {
+        activeProfile.name = studentName;
+      }
+
+      setUserProfile(activeProfile);
+      localStorage.setItem(PROFILE_KEY, JSON.stringify(activeProfile));
+
       setAuthEmail(email);
       setIsAuthenticated(true);
       localStorage.setItem(AUTH_EMAIL_KEY, email);
 
       if (data.data) {
-        const { profile, conversations: cloudConvs, commitments: cloudCommits, notes: cloudNotes } = data.data;
-        if (profile && Object.keys(profile).length > 0) {
-          setUserProfile(profile);
-          localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
-        } else {
-          const studentName = authNameInput.trim();
-          const defProf = { name: studentName, occupation: '', goals: '', challenges: '' };
-          setUserProfile(defProf);
-          localStorage.setItem(PROFILE_KEY, JSON.stringify(defProf));
-        }
+        const { conversations: cloudConvs, commitments: cloudCommits, notes: cloudNotes } = data.data;
 
         if (Array.isArray(cloudConvs) && cloudConvs.length > 0) {
           setConversations(cloudConvs);

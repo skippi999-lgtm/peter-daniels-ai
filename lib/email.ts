@@ -70,6 +70,9 @@ export async function sendWelcomeEmail({
           user: gmailUser,
           pass: gmailPass.replace(/\s+/g, ''), // cleans spaces from Google 16-char app password
         },
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 15000,
       });
 
       const info = await transporter.sendMail({
@@ -82,7 +85,7 @@ export async function sendWelcomeEmail({
       console.log('[Gmail SMTP] Successfully delivered welcome email to', email, 'MessageId:', info.messageId);
       return { success: true, provider: 'gmail', messageId: info.messageId };
     } catch (err: any) {
-      console.error('[Gmail SMTP Error]', err);
+      console.error('[Gmail SMTP Error]', err?.message || err);
     }
   }
 

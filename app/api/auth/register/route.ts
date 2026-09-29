@@ -73,17 +73,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: insertError.message }, { status: 500 });
     }
 
-    // 4. Send welcome email via Resend asynchronously (doesn't block response)
-    sendWelcomeEmail({
-      email: normalizedEmail,
-      password: password,
-      name: studentName,
-    }).catch((err) => console.error('Error sending welcome email:', err));
+    // 4. Send welcome email (awaited to ensure serverless function does not terminate mid-flight)
+    let emailDelivery: any = null;
+    try {
+      emailDelivery = await sendWelcomeEmail({
+        email: normalizedEmail,
+        password: password,
+        name: studentName,
+      });
+      console.log('[Register] Welcome email delivery status:', emailDelivery);
+    } catch (emailErr) {
+      console.error('[Register] Error sending welcome email:', emailErr);
+    }
 
     return NextResponse.json({
       success: true,
       email: normalizedEmail,
       data: newUser,
+      emailDelivery,
     });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });

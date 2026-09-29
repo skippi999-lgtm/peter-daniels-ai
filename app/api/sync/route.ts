@@ -51,15 +51,24 @@ export async function POST(req: NextRequest) {
       updated_at: new Date().toISOString(),
     };
 
-    // Preserve existing password_hash during sync update
+    // Preserve existing password_hash and profile fields (like name) during sync update
     const { data: existing } = await supabase
       .from('user_sync')
-      .select('password_hash')
+      .select('password_hash, profile')
       .eq('user_key', normalizedKey)
       .maybeSingle();
 
     if (existing?.password_hash) {
       updatePayload.password_hash = existing.password_hash;
+    }
+
+    // Safely merge profile: never overwrite existing non-empty name with an empty string
+    if (existing?.profile && typeof existing.profile === 'object') {
+      const mergedProfile = { ...existing.profile, ...(profile || {}) };
+      if ((!profile?.name || !String(profile.name).trim()) && existing.profile.name) {
+        mergedProfile.name = existing.profile.name;
+      }
+      updatePayload.profile = mergedProfile;
     }
 
     const { data, error } = await supabase
