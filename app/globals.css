@@ -2,15 +2,45 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
+:root,
+[data-theme="dark"],
+.dark {
   --background: #0f0f0f;
   --foreground: #f5f0e8;
   --accent: #c9a84c;
   --accent-dark: #8b6914;
   --surface: #1a1a1a;
   --surface-2: #252525;
+  --surface-3: #303030;
   --border: #2e2e2e;
-  --text-muted: #888;
+  --border-focus: #c9a84c;
+  --text-muted: #8e8e8e;
+  --text-dim: #606060;
+  --bubble-user-bg: #2a2316;
+  --bubble-user-text: #f7f3ec;
+  --card-highlight: rgba(201, 168, 76, 0.12);
+  --modal-overlay: rgba(0, 0, 0, 0.8);
+  --modal-bg: #181818;
+}
+
+[data-theme="light"],
+.light {
+  --background: #f8f6f0;
+  --foreground: #1c1a16;
+  --accent: #9a7218;
+  --accent-dark: #70520e;
+  --surface: #ffffff;
+  --surface-2: #ede8dc;
+  --surface-3: #e0dacf;
+  --border: #ded7c7;
+  --border-focus: #9a7218;
+  --text-muted: #6b6352;
+  --text-dim: #948b78;
+  --bubble-user-bg: #eae0cb;
+  --bubble-user-text: #221c10;
+  --card-highlight: rgba(154, 114, 24, 0.1);
+  --modal-overlay: rgba(30, 26, 18, 0.55);
+  --modal-bg: #ffffff;
 }
 
 * {
@@ -21,6 +51,7 @@ body {
   background-color: var(--background);
   color: var(--foreground);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* Custom scrollbar */
@@ -34,18 +65,22 @@ body {
   background: var(--border);
   border-radius: 3px;
 }
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
 
 /* Markdown prose styles */
 .prose-peter p { margin-bottom: 1em; line-height: 1.8; }
 .prose-peter strong { color: var(--accent); }
-.prose-peter em { color: #d4c5a0; }
+.prose-peter em { color: var(--accent-dark); font-style: italic; }
 .prose-peter ul { list-style: disc; padding-left: 1.5em; margin-bottom: 1em; }
 .prose-peter ol { list-style: decimal; padding-left: 1.5em; margin-bottom: 1em; }
 .prose-peter li { margin-bottom: 0.4em; }
 .prose-peter blockquote {
   border-left: 3px solid var(--accent);
   padding-left: 1em;
-  color: #d4c5a0;
+  color: var(--foreground);
+  opacity: 0.9;
   font-style: italic;
   margin: 1em 0;
 }

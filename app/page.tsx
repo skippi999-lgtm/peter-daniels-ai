@@ -72,6 +72,7 @@ const PROFILE_KEY = 'peter_daniels_user_profile_v1';
 const NOTES_KEY = 'peter_daniels_user_notes_v1';
 const COMMITMENTS_KEY = 'peter_daniels_commitments_v1';
 const AUTH_EMAIL_KEY = 'peter_daniels_auth_email_v1';
+const THEME_KEY = 'peter_daniels_theme_v1';
 
 // Helper to extract numbered or bulleted action items from text
 function extractActionItems(text: string): string[] {
@@ -108,6 +109,9 @@ function extractActionItems(text: string): string[] {
 }
 
 export default function ChatPage() {
+  // Theme State
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+
   // Email Auth State
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [authEmail, setAuthEmail] = useState<string>('');
@@ -238,6 +242,54 @@ export default function ChatPage() {
       setSyncStatus('synced');
     } catch {
       setSyncStatus('offline');
+    }
+  };
+
+  // 0. Theme initialization & toggle
+  useEffect(() => {
+    try {
+      const savedTheme = localStorage.getItem(THEME_KEY) as 'dark' | 'light' | null;
+      if (savedTheme === 'light' || savedTheme === 'dark') {
+        setTheme(savedTheme);
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        if (savedTheme === 'dark') {
+          document.documentElement.classList.add('dark');
+          document.documentElement.classList.remove('light');
+        } else {
+          document.documentElement.classList.add('light');
+          document.documentElement.classList.remove('dark');
+        }
+      } else if (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+        setTheme('light');
+        document.documentElement.setAttribute('data-theme', 'light');
+        document.documentElement.classList.add('light');
+        document.documentElement.classList.remove('dark');
+      } else {
+        setTheme('dark');
+        document.documentElement.setAttribute('data-theme', 'dark');
+        document.documentElement.classList.add('dark');
+        document.documentElement.classList.remove('light');
+      }
+    } catch (e) {
+      console.error('Failed to init theme:', e);
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const nextTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(nextTheme);
+    try {
+      localStorage.setItem(THEME_KEY, nextTheme);
+      document.documentElement.setAttribute('data-theme', nextTheme);
+      if (nextTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+        document.documentElement.classList.remove('light');
+      } else {
+        document.documentElement.classList.add('light');
+        document.documentElement.classList.remove('dark');
+      }
+    } catch (e) {
+      console.error('Failed to save theme:', e);
     }
   };
 
@@ -930,7 +982,41 @@ export default function ChatPage() {
   // Lock Screen if not authenticated (Email + Password Login / Register)
   if (!isAuthenticated) {
     return (
-      <div className="flex h-screen items-center justify-center p-4" style={{ background: 'var(--background)' }}>
+      <div className="min-h-screen flex flex-col items-center justify-center p-4 relative" style={{ background: 'var(--background)' }}>
+        {/* Top-right quick controls: Theme & Language */}
+        <div className="absolute top-4 right-4 flex items-center gap-2">
+          {/* Theme switch */}
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-xl font-medium transition-all shadow-sm"
+            style={{
+              background: 'var(--surface)',
+              color: 'var(--accent)',
+              border: '1px solid var(--border)',
+            }}
+            title={lang === 'ru' ? (theme === 'dark' ? 'Включить светлую тему' : 'Включить тёмную тему') : (theme === 'dark' ? 'Switch to Light theme' : 'Switch to Dark theme')}
+          >
+            <span>{theme === 'dark' ? '☀️' : '🌙'}</span>
+            <span className="text-[11px] font-semibold">{theme === 'dark' ? (lang === 'ru' ? 'Светлая' : 'Light') : (lang === 'ru' ? 'Тёмная' : 'Dark')}</span>
+          </button>
+
+          {/* Lang switch */}
+          <button
+            type="button"
+            onClick={() => setLang((l) => (l === 'ru' ? 'en' : 'ru'))}
+            className="text-xs font-semibold px-2.5 py-1.5 rounded-xl transition-all shadow-sm"
+            style={{
+              background: 'var(--surface)',
+              color: 'var(--accent)',
+              border: '1px solid var(--border)',
+            }}
+            title={lang === 'ru' ? 'Сменить язык' : 'Switch language'}
+          >
+            {lang === 'ru' ? '🇷🇺 RU' : '🇺🇸 EN'}
+          </button>
+        </div>
+
         <div
           className="w-full max-w-sm rounded-3xl p-8 text-center space-y-6 shadow-2xl border"
           style={{
@@ -956,18 +1042,31 @@ export default function ChatPage() {
           </div>
 
           {/* Mode Switcher */}
-          <div className="flex rounded-xl p-1 bg-black/40 border border-neutral-800 text-xs font-semibold">
+          <div
+            className="flex rounded-xl p-1 text-xs font-semibold"
+            style={{
+              background: 'var(--surface-2)',
+              border: '1px solid var(--border)',
+            }}
+          >
             <button
               type="button"
               onClick={() => {
                 setAuthMode('login');
                 setAuthError('');
               }}
-              className={`flex-1 py-2 rounded-lg transition-all ${
+              className="flex-1 py-2 rounded-lg transition-all"
+              style={
                 authMode === 'login'
-                  ? 'bg-neutral-800 text-amber-200 shadow'
-                  : 'text-neutral-400 hover:text-neutral-200'
-              }`}
+                  ? {
+                      background: 'var(--surface)',
+                      color: 'var(--accent)',
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                    }
+                  : {
+                      color: 'var(--text-muted)',
+                    }
+              }
             >
               {lang === 'ru' ? 'Вход' : 'Sign In'}
             </button>
@@ -977,11 +1076,18 @@ export default function ChatPage() {
                 setAuthMode('register');
                 setAuthError('');
               }}
-              className={`flex-1 py-2 rounded-lg transition-all ${
+              className="flex-1 py-2 rounded-lg transition-all"
+              style={
                 authMode === 'register'
-                  ? 'bg-neutral-800 text-amber-200 shadow'
-                  : 'text-neutral-400 hover:text-neutral-200'
-              }`}
+                  ? {
+                      background: 'var(--surface)',
+                      color: 'var(--accent)',
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                    }
+                  : {
+                      color: 'var(--text-muted)',
+                    }
+              }
             >
               {lang === 'ru' ? 'Регистрация' : 'Register'}
             </button>
@@ -991,7 +1097,7 @@ export default function ChatPage() {
           <form onSubmit={handleAuthSubmit} className="space-y-3.5 text-left">
             {authMode === 'register' && (
               <div>
-                <label className="block text-xs font-semibold mb-1 text-neutral-300">
+                <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--foreground)' }}>
                   {lang === 'ru' ? 'Ваше имя (как к вам обращаться)' : 'Your Name'}
                 </label>
                 <input
@@ -1010,7 +1116,7 @@ export default function ChatPage() {
             )}
 
             <div>
-              <label className="block text-xs font-semibold mb-1 text-neutral-300">
+              <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--foreground)' }}>
                 Email
               </label>
               <input
@@ -1033,7 +1139,7 @@ export default function ChatPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold mb-1 text-neutral-300">
+              <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--foreground)' }}>
                 {lang === 'ru' ? 'Пароль' : 'Password'}
               </label>
               <input
@@ -1055,7 +1161,7 @@ export default function ChatPage() {
             </div>
 
             {authMode === 'register' && (
-              <p className="text-[11px] text-amber-200/80 leading-relaxed pt-1">
+              <p className="text-[11px] leading-relaxed pt-1" style={{ color: 'var(--accent)' }}>
                 ✉️ {lang === 'ru' 
                   ? 'Мы вышлем подтверждение и ваши данные для входа на эту почту.' 
                   : 'We will send a welcome email with your login details.'}
@@ -1063,7 +1169,14 @@ export default function ChatPage() {
             )}
 
             {authError && (
-              <div className="p-2.5 rounded-xl bg-red-950/40 border border-red-800/60 text-xs text-red-300">
+              <div
+                className="p-2.5 rounded-xl text-xs"
+                style={{
+                  background: 'rgba(239, 68, 68, 0.1)',
+                  border: '1px solid rgba(239, 68, 68, 0.3)',
+                  color: '#ef4444',
+                }}
+              >
                 {authError}
               </div>
             )}
@@ -1095,7 +1208,8 @@ export default function ChatPage() {
                 setAuthMode(authMode === 'login' ? 'register' : 'login');
                 setAuthError('');
               }}
-              className="text-xs text-neutral-400 hover:text-amber-200 transition-colors"
+              className="text-xs transition-colors"
+              style={{ color: 'var(--text-muted)' }}
             >
               {authMode === 'login'
                 ? (lang === 'ru' ? 'Впервые здесь? Создать аккаунт →' : 'New here? Register →')
@@ -1143,7 +1257,8 @@ export default function ChatPage() {
 
             <button
               onClick={() => setIsSidebarOpen(false)}
-              className="md:hidden p-2 rounded-lg text-neutral-400 hover:text-white"
+              className="md:hidden p-2 rounded-lg"
+              style={{ color: 'var(--text-muted)' }}
             >
               ✕
             </button>
@@ -1162,17 +1277,17 @@ export default function ChatPage() {
             <div className="flex items-center gap-2">
               <span className="text-base">🎯</span>
               <div className="text-left">
-                <div className="font-semibold text-amber-200">
+                <div className="font-semibold" style={{ color: 'var(--accent)' }}>
                   {userProfile.name ? userProfile.name : (lang === 'ru' ? 'Мой профиль и цели' : 'My Profile & Goals')}
                 </div>
-                <div className="text-[10px] text-neutral-400">
+                <div className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
                   {activeCommitmentsCount > 0
                     ? `⚠️ ${activeCommitmentsCount} ${lang === 'ru' ? 'активных обязательств' : 'active tasks'}`
                     : (lang === 'ru' ? 'Память и обязательства' : 'Memory & Commitments')}
                 </div>
               </div>
             </div>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-neutral-400">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: 'var(--text-muted)' }}>
               <polyline points="9 18 15 12 9 6" />
             </svg>
           </button>
@@ -1181,9 +1296,9 @@ export default function ChatPage() {
         {/* Action Items Mini Widget in Sidebar */}
         {commitments.length > 0 && (
           <div className="p-3 border-b space-y-2" style={{ borderColor: 'var(--border)' }}>
-            <div className="flex items-center justify-between text-[11px] font-semibold tracking-wider text-amber-200/90 uppercase px-1">
+            <div className="flex items-center justify-between text-[11px] font-semibold tracking-wider uppercase px-1" style={{ color: 'var(--accent)' }}>
               <span>{lang === 'ru' ? 'Мои обязательства' : 'Action Commitments'}</span>
-              <span className="text-[10px] text-neutral-400">
+              <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
                 {commitments.filter((c) => c.done).length}/{commitments.length}
               </span>
             </div>
@@ -1193,16 +1308,32 @@ export default function ChatPage() {
                   key={c.id}
                   onClick={() => toggleCommitment(c.id)}
                   className={`flex items-center justify-between p-2 rounded-lg text-xs cursor-pointer border transition-colors ${
-                    c.done
-                      ? 'bg-neutral-900/40 border-neutral-800 text-neutral-500 line-through'
-                      : 'bg-neutral-800/50 border-neutral-700/60 text-neutral-200 hover:bg-neutral-800'
+                    c.done ? 'line-through' : ''
                   }`}
+                  style={
+                    c.done
+                      ? {
+                          background: 'var(--surface-2)',
+                          borderColor: 'var(--border)',
+                          color: 'var(--text-muted)',
+                        }
+                      : {
+                          background: 'var(--surface)',
+                          borderColor: 'var(--border)',
+                          color: 'var(--foreground)',
+                        }
+                  }
                   title={c.done ? (lang === 'ru' ? 'Нажмите, чтобы вернуть в работу' : 'Click to resume') : (lang === 'ru' ? 'Нажмите, чтобы отметить выполненным' : 'Click to mark complete')}
                 >
                   <span className="truncate pr-2 leading-tight">{c.text.replace(/\*+/g, '').trim()}</span>
-                  <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium flex-shrink-0 ${
-                    c.done ? 'bg-emerald-950 text-emerald-400' : 'bg-amber-500/20 text-amber-300'
-                  }`}>
+                  <span
+                    className="text-[10px] px-1.5 py-0.5 rounded font-medium flex-shrink-0"
+                    style={
+                      c.done
+                        ? { background: 'rgba(16, 185, 129, 0.15)', color: '#10b981' }
+                        : { background: 'var(--card-highlight)', color: 'var(--accent)' }
+                    }
+                  >
                     {c.done ? '✓' : (lang === 'ru' ? 'В работе' : 'In work')}
                   </span>
                 </div>
@@ -1226,17 +1357,18 @@ export default function ChatPage() {
                   setActiveId(c.id);
                   setIsSidebarOpen(false);
                 }}
-                className={`group flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer text-sm transition-colors ${
-                  isActive ? 'font-medium' : 'text-neutral-300 hover:bg-neutral-800/60'
-                }`}
+                className="group flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer text-sm transition-colors"
                 style={
                   isActive
                     ? {
                         background: 'var(--surface-2)',
                         color: 'var(--accent)',
                         border: '1px solid var(--border)',
+                        fontWeight: 600,
                       }
-                    : {}
+                    : {
+                        color: 'var(--foreground)',
+                      }
                 }
               >
                 <div className="flex items-center gap-2 truncate pr-2">
@@ -1254,6 +1386,7 @@ export default function ChatPage() {
                   onClick={(e) => handleDeleteChat(c.id, e)}
                   title={lang === 'ru' ? 'Удалить' : 'Delete'}
                   className="opacity-0 group-hover:opacity-100 hover:text-red-400 p-1 rounded transition-opacity"
+                  style={{ color: 'var(--text-muted)' }}
                 >
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <line x1="18" y1="6" x2="6" y2="18" />
@@ -1276,7 +1409,8 @@ export default function ChatPage() {
           <div className="flex items-center gap-2.5 min-w-0">
             <button
               onClick={() => setIsSidebarOpen(true)}
-              className="md:hidden p-1.5 rounded-lg text-neutral-300 hover:bg-neutral-800"
+              className="md:hidden p-1.5 rounded-lg"
+              style={{ color: 'var(--foreground)' }}
               title={lang === 'ru' ? 'Открыть меню' : 'Open menu'}
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -1287,7 +1421,7 @@ export default function ChatPage() {
             </button>
 
             <div
-              className="w-9 h-9 rounded-full flex items-center justify-center text-base font-bold flex-shrink-0"
+              className="w-9 h-9 rounded-full flex items-center justify-center text-base font-bold flex-shrink-0 shadow"
               style={{ background: 'var(--accent)', color: '#000' }}
             >
               P
@@ -1299,7 +1433,7 @@ export default function ChatPage() {
               <div className="flex items-center gap-1.5 text-[11px]" style={{ color: 'var(--text-muted)' }}>
                 <span>{lang === 'ru' ? 'Виртуальный наставник' : 'Virtual Mentor'}</span>
                 {userProfile.name ? (
-                  <span className="text-amber-200/80">· {userProfile.name}</span>
+                  <span style={{ color: 'var(--accent)' }}>· {userProfile.name}</span>
                 ) : null}
                 <span
                   title={
@@ -1326,8 +1460,21 @@ export default function ChatPage() {
             <button
               onClick={toggleTimer}
               className={`flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg transition-all ${
-                isTimerRunning ? 'bg-amber-900/40 text-amber-300 border border-amber-500/40 animate-pulse' : 'bg-neutral-800/60 text-neutral-400 border border-neutral-700/50'
+                isTimerRunning ? 'animate-pulse' : ''
               }`}
+              style={
+                isTimerRunning
+                  ? {
+                      background: 'var(--card-highlight)',
+                      color: 'var(--accent)',
+                      border: '1px solid var(--accent)',
+                    }
+                  : {
+                      background: 'var(--surface-2)',
+                      color: 'var(--text-muted)',
+                      border: '1px solid var(--border)',
+                    }
+              }
               title={isTimerRunning ? (lang === 'ru' ? 'Поставить таймер на паузу' : 'Pause timer') : (lang === 'ru' ? 'Запустить 30-минутную фокус-сессию' : 'Start 30-minute focus session')}
             >
               <span>⏱️</span>
@@ -1372,10 +1519,27 @@ export default function ChatPage() {
               </span>
             </button>
 
+            {/* Theme toggle */}
+            <button
+              onClick={toggleTheme}
+              className="flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-lg transition-colors"
+              style={{
+                background: 'var(--surface-2)',
+                color: 'var(--accent)',
+                border: '1px solid var(--border)',
+              }}
+              title={lang === 'ru' ? (theme === 'dark' ? 'Включить светлую тему' : 'Включить тёмную тему') : (theme === 'dark' ? 'Switch to Light theme' : 'Switch to Dark theme')}
+            >
+              <span>{theme === 'dark' ? '☀️' : '🌙'}</span>
+              <span className="hidden sm:inline">
+                {theme === 'dark' ? (lang === 'ru' ? 'Светлая' : 'Light') : (lang === 'ru' ? 'Тёмная' : 'Dark')}
+              </span>
+            </button>
+
             {/* Language toggle */}
             <button
               onClick={() => setLang((l) => (l === 'ru' ? 'en' : 'ru'))}
-              className="text-xs font-medium px-2 py-1.5 rounded-lg transition-colors"
+              className="text-xs font-semibold px-2 py-1.5 rounded-lg transition-colors"
               style={{
                 background: 'var(--surface-2)',
                 color: 'var(--accent)',
@@ -1390,14 +1554,22 @@ export default function ChatPage() {
 
         {/* Welcome Registration Banner */}
         {welcomeBanner && (
-          <div className="bg-amber-950/90 border-b border-amber-500/50 text-amber-200 text-xs px-4 py-2.5 flex items-center justify-between shadow-sm">
+          <div
+            className="border-b text-xs px-4 py-2.5 flex items-center justify-between shadow-sm"
+            style={{
+              background: 'var(--surface-2)',
+              borderBottomColor: 'var(--accent)',
+              color: 'var(--foreground)',
+            }}
+          >
             <div className="flex items-center gap-2">
               <span className="text-base">✉️</span>
               <span>{welcomeBanner}</span>
             </div>
             <button
               onClick={() => setWelcomeBanner('')}
-              className="text-amber-400 hover:text-white px-2 py-0.5 rounded text-sm font-bold"
+              className="px-2 py-0.5 rounded text-sm font-bold"
+              style={{ color: 'var(--accent)' }}
             >
               ✕
             </button>
@@ -1423,7 +1595,14 @@ export default function ChatPage() {
                 </h2>
 
                 {activeCommitmentsCount > 0 && (
-                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs bg-amber-500/10 border border-amber-500/30 text-amber-300 mb-3">
+                  <div
+                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs mb-3"
+                    style={{
+                      background: 'var(--card-highlight)',
+                      border: '1px solid var(--accent)',
+                      color: 'var(--accent)',
+                    }}
+                  >
                     <span>⚠️</span>
                     <span>
                       {lang === 'ru'
@@ -1509,8 +1688,16 @@ export default function ChatPage() {
                   }`}
                   style={
                     msg.role === 'user'
-                      ? { background: 'var(--accent-dark)', color: 'var(--foreground)' }
-                      : { background: 'var(--surface)', border: '1px solid var(--border)' }
+                      ? {
+                          background: 'var(--bubble-user-bg)',
+                          color: 'var(--bubble-user-text)',
+                          border: '1px solid var(--border)',
+                        }
+                      : {
+                          background: 'var(--surface)',
+                          border: '1px solid var(--border)',
+                          color: 'var(--foreground)',
+                        }
                   }
                 >
                   {msg.role === 'assistant' ? (
@@ -1523,7 +1710,12 @@ export default function ChatPage() {
                       <div className="pt-2 border-t flex items-center justify-between" style={{ borderColor: 'var(--border)' }}>
                         <button
                           onClick={() => openCommitmentReview(msg.content)}
-                          className="text-[11px] text-amber-300/90 hover:text-amber-200 transition-colors flex items-center gap-1.5 px-2 py-1 rounded-md bg-amber-500/10 border border-amber-500/20"
+                          className="text-[11px] transition-colors flex items-center gap-1.5 px-2 py-1 rounded-md"
+                          style={{
+                            background: 'var(--card-highlight)',
+                            border: '1px solid var(--border)',
+                            color: 'var(--accent)',
+                          }}
                           title={lang === 'ru' ? 'Выбрать шаги и принять на себя обязательства' : 'Choose action steps and accept commitments'}
                         >
                           <span>🎯</span>
@@ -1688,7 +1880,7 @@ export default function ChatPage() {
 
       {/* MODAL 1: Commitment Decision & Free Will Selection */}
       {isCommitSelectionModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md" style={{ background: 'var(--modal-overlay)' }}>
           <div
             className="w-full max-w-xl rounded-2xl overflow-hidden shadow-2xl border"
             style={{
@@ -1706,7 +1898,8 @@ export default function ChatPage() {
               </div>
               <button
                 onClick={() => setIsCommitSelectionModalOpen(false)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors"
+                className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-colors"
+                style={{ color: 'var(--text-muted)' }}
                 title={lang === 'ru' ? 'Закрыть' : 'Close'}
               >
                 ✕
@@ -1714,7 +1907,7 @@ export default function ChatPage() {
             </div>
 
             <div className="p-5 space-y-4 text-sm">
-              <p className="text-xs text-neutral-300 leading-relaxed">
+              <p className="text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
                 {lang === 'ru'
                   ? 'Питер Дэниелс предложил следующие шаги. Отметьте только те, которые вы осознанно готовы взять в работу. Питер спросит с вас отчет по ним!'
                   : 'Peter Daniels proposed the following steps. Select only those you deliberately commit to execute.'}
@@ -1729,11 +1922,21 @@ export default function ChatPage() {
                         prev.map((p) => (p.id === item.id ? { ...p, selected: !p.selected } : p))
                       );
                     }}
-                    className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                    className="flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all"
+                    style={
                       item.selected
-                        ? 'bg-amber-950/20 border-amber-500/40 text-neutral-100 shadow-sm'
-                        : 'bg-neutral-900/40 border-neutral-800 text-neutral-400 opacity-60'
-                    }`}
+                        ? {
+                            background: 'var(--card-highlight)',
+                            borderColor: 'var(--accent)',
+                            color: 'var(--foreground)',
+                          }
+                        : {
+                            background: 'var(--surface-2)',
+                            borderColor: 'var(--border)',
+                            color: 'var(--text-muted)',
+                            opacity: 0.75,
+                          }
+                    }
                   >
                     <input
                       type="checkbox"
@@ -1742,10 +1945,10 @@ export default function ChatPage() {
                       className="mt-0.5 rounded accent-amber-500 cursor-pointer h-4 w-4"
                     />
                     <div className="flex-1 space-y-1">
-                      <div className="text-[11px] font-semibold text-amber-200">
+                      <div className="text-[11px] font-semibold" style={{ color: 'var(--accent)' }}>
                         {lang === 'ru' ? `Обязательство #${idx + 1}` : `Commitment #${idx + 1}`}
                       </div>
-                      <p className="text-xs leading-relaxed text-neutral-200">
+                      <p className="text-xs leading-relaxed" style={{ color: 'var(--foreground)' }}>
                         {item.text.replace(/\*+/g, '').trim()}
                       </p>
                     </div>
@@ -1757,7 +1960,8 @@ export default function ChatPage() {
             <div className="p-4 border-t flex items-center justify-between" style={{ borderColor: 'var(--border)' }}>
               <button
                 onClick={() => setIsCommitSelectionModalOpen(false)}
-                className="text-xs text-neutral-400 hover:text-white px-3 py-1.5"
+                className="text-xs px-3 py-1.5 transition-colors"
+                style={{ color: 'var(--text-muted)' }}
               >
                 {lang === 'ru' ? 'Отклонить всё' : 'Cancel'}
               </button>
@@ -1778,25 +1982,35 @@ export default function ChatPage() {
 
       {/* MODAL 0: Celebration & Triumph Modal 🎉 */}
       {isCelebrationOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md animate-fade-in" style={{ background: 'var(--modal-overlay)' }}>
           <div
             className="w-full max-w-md rounded-3xl p-6 text-center shadow-2xl border space-y-4"
             style={{
-              background: 'linear-gradient(145deg, #1f1b14 0%, #12110e 100%)',
+              background:
+                theme === 'dark'
+                  ? 'linear-gradient(145deg, #1f1b14 0%, #12110e 100%)'
+                  : 'linear-gradient(145deg, #ffffff 0%, #f7f4ec 100%)',
               borderColor: 'var(--accent)',
             }}
           >
-            <div className="w-16 h-16 rounded-full bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-3xl mx-auto shadow-inner">
+            <div
+              className="w-16 h-16 rounded-full flex items-center justify-center text-3xl mx-auto shadow-inner"
+              style={{
+                background: 'var(--card-highlight)',
+                border: '1px solid var(--accent)',
+              }}
+            >
               🏆
             </div>
 
             <div className="space-y-1.5">
-              <h3 className="font-extrabold text-lg md:text-xl text-amber-200">
+              <h3 className="font-extrabold text-lg md:text-xl" style={{ color: 'var(--accent)' }}>
                 {lang === 'ru'
                   ? `Обязательства приняты, ${userProfile.name || 'мой друг'}!`
-                  : `Commitment Made, ${userProfile.name || 'my friend'}!`}
+                  : `Commitment Made, ${userProfile.name || 'my friend'}!`
+                }
               </h3>
-              <p className="text-xs text-neutral-300">
+              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
                 {lang === 'ru'
                   ? `Вы зафиксировали ${celebratedCount} ${
                       celebratedCount === 1
@@ -1811,13 +2025,19 @@ export default function ChatPage() {
               </p>
             </div>
 
-            <div className="p-3.5 rounded-2xl bg-black/40 border border-neutral-800 text-left">
-              <p className="text-xs italic text-amber-100/90 leading-relaxed">
+            <div
+              className="p-3.5 rounded-2xl border text-left"
+              style={{
+                background: 'var(--surface-2)',
+                borderColor: 'var(--border)',
+              }}
+            >
+              <p className="text-xs italic leading-relaxed" style={{ color: 'var(--foreground)' }}>
                 {lang === 'ru'
                   ? '«Слова стоят дёшево. Но готовность действовать и держать слово разделяет лидеров и мечтателей. Я горжусь твоим выбором. Иди и победи!»'
                   : '«Words are cheap. But execution separates leaders from dreamers. I am proud of your resolve. Go and win!»'}
               </p>
-              <div className="text-right text-[11px] font-semibold text-amber-400 mt-2">
+              <div className="text-right text-[11px] font-semibold mt-2" style={{ color: 'var(--accent)' }}>
                 — Peter Daniels
               </div>
             </div>
@@ -1838,7 +2058,7 @@ export default function ChatPage() {
 
       {/* MODAL 2: My Profile, Goals & Action Commitments */}
       {isProfileModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm" style={{ background: 'var(--modal-overlay)' }}>
           <div
             className="w-full max-w-2xl max-h-[90vh] flex flex-col rounded-2xl overflow-hidden shadow-2xl"
             style={{
@@ -1856,7 +2076,8 @@ export default function ChatPage() {
               </div>
               <button
                 onClick={() => setIsProfileModalOpen(false)}
-                className="p-1 rounded-lg text-neutral-400 hover:text-white"
+                className="p-1 rounded-lg transition-colors"
+                style={{ color: 'var(--text-muted)' }}
               >
                 ✕
               </button>
@@ -1865,18 +2086,18 @@ export default function ChatPage() {
             {/* Modal Body */}
             <div className="flex-1 overflow-y-auto p-5 space-y-6 text-sm">
               {/* Section 1: Action Commitments */}
-              <div className="space-y-3 bg-neutral-900/50 p-4 rounded-xl border" style={{ borderColor: 'var(--border)' }}>
+              <div className="space-y-3 p-4 rounded-xl border" style={{ background: 'var(--surface-2)', borderColor: 'var(--border)' }}>
                 <div className="flex items-center justify-between">
-                  <h4 className="font-bold text-xs uppercase tracking-wider text-amber-200 flex items-center gap-1.5">
+                  <h4 className="font-bold text-xs uppercase tracking-wider flex items-center gap-1.5" style={{ color: 'var(--accent)' }}>
                     <span>📌</span>
                     <span>{lang === 'ru' ? 'Мои обязательства к исполнению' : 'Action Commitments'}</span>
                   </h4>
-                  <span className="text-[11px] text-neutral-400">
+                  <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
                     {commitments.filter((c) => !c.done).length} {lang === 'ru' ? 'в процессе' : 'pending'}
                   </span>
                 </div>
 
-                <p className="text-xs text-neutral-400">
+                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
                   {lang === 'ru'
                     ? 'Питер Дэниелс спросит с вас отчет по этим пунктам в начале следующего разговора.'
                     : 'Peter Daniels will ask for your progress on these tasks at the start of your next talk.'}
@@ -1896,7 +2117,7 @@ export default function ChatPage() {
                     }}
                     placeholder={lang === 'ru' ? 'Добавить новое обязательство/шаг...' : 'Add new action commitment...'}
                     className="flex-1 px-3 py-1.5 rounded-lg text-xs outline-none"
-                    style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', color: 'var(--foreground)' }}
+                    style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--foreground)' }}
                   />
                   <button
                     onClick={() => addCommitment(newCommitmentText)}
@@ -1913,17 +2134,29 @@ export default function ChatPage() {
                     {commitments.map((c) => (
                       <div
                         key={c.id}
-                        className={`flex items-start justify-between p-3 rounded-xl border transition-all ${
+                        className="flex items-start justify-between p-3 rounded-xl border transition-all"
+                        style={
                           c.done
-                            ? 'bg-neutral-900/40 border-neutral-800 text-neutral-500'
-                            : 'bg-neutral-800/60 border-neutral-700/70 text-neutral-100 shadow-sm'
-                        }`}
+                            ? {
+                                background: 'var(--surface-2)',
+                                borderColor: 'var(--border)',
+                                opacity: 0.75,
+                              }
+                            : {
+                                background: 'var(--surface)',
+                                borderColor: 'var(--border)',
+                                boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+                              }
+                        }
                       >
                         <div className="flex-1 pr-3 space-y-1">
-                          <p className={`text-xs leading-relaxed ${c.done ? 'line-through text-neutral-500' : 'text-neutral-200 font-medium'}`}>
+                          <p
+                            className={`text-xs leading-relaxed ${c.done ? 'line-through' : 'font-medium'}`}
+                            style={{ color: c.done ? 'var(--text-muted)' : 'var(--foreground)' }}
+                          >
                             {c.text.replace(/\*+/g, '').trim()}
                           </p>
-                          <div className="text-[10px] text-neutral-500">
+                          <div className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
                             {lang === 'ru' ? 'Добавлено' : 'Added'}: {c.date}
                           </div>
                         </div>
@@ -1931,11 +2164,20 @@ export default function ChatPage() {
                         <div className="flex items-center gap-1.5 flex-shrink-0">
                           <button
                             onClick={() => toggleCommitment(c.id)}
-                            className={`flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-lg transition-all ${
+                            className="flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-lg transition-all"
+                            style={
                               c.done
-                                ? 'bg-emerald-950/60 text-emerald-400 border border-emerald-800/60 hover:bg-emerald-900/60'
-                                : 'bg-amber-500/10 text-amber-300 border border-amber-500/30 hover:bg-amber-500/20'
-                            }`}
+                                ? {
+                                    background: 'rgba(16, 185, 129, 0.15)',
+                                    color: '#10b981',
+                                    border: '1px solid rgba(16, 185, 129, 0.3)',
+                                  }
+                                : {
+                                    background: 'var(--card-highlight)',
+                                    color: 'var(--accent)',
+                                    border: '1px solid var(--accent)',
+                                  }
+                            }
                             title={lang === 'ru' ? 'Нажмите, чтобы переключить статус задачи' : 'Click to toggle task status'}
                           >
                             <span>{c.done ? (lang === 'ru' ? '✅ Сделано' : '✅ Done') : (lang === 'ru' ? '⏳ В процессе' : '⏳ In progress')}</span>
@@ -1943,7 +2185,8 @@ export default function ChatPage() {
 
                           <button
                             onClick={() => deleteCommitment(c.id)}
-                            className="text-neutral-500 hover:text-red-400 p-1.5 rounded-lg hover:bg-neutral-800 transition-colors"
+                            className="hover:text-red-400 p-1.5 rounded-lg transition-colors"
+                            style={{ color: 'var(--text-muted)' }}
                             title={lang === 'ru' ? 'Удалить задачу' : 'Delete task'}
                           >
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -1956,7 +2199,7 @@ export default function ChatPage() {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-3 text-xs text-neutral-500 italic">
+                  <div className="text-center py-3 text-xs italic" style={{ color: 'var(--text-muted)' }}>
                     {lang === 'ru' ? 'Нет активных обязательств. Обсудите планы с Питером!' : 'No active commitments'}
                   </div>
                 )}
@@ -1964,12 +2207,12 @@ export default function ChatPage() {
 
               {/* Section 2: Student Profile */}
               <div className="space-y-4">
-                <h4 className="font-bold text-xs uppercase tracking-wider text-amber-200">
+                <h4 className="font-bold text-xs uppercase tracking-wider" style={{ color: 'var(--accent)' }}>
                   {lang === 'ru' ? 'Карточка ученика' : 'Student Profile'}
                 </h4>
 
                 <div>
-                  <label className="block text-xs font-semibold mb-1 text-neutral-300">
+                  <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--foreground)' }}>
                     {lang === 'ru' ? 'Ваше имя / Как к вам обращаться' : 'Your Name'}
                   </label>
                   <input
@@ -1978,12 +2221,12 @@ export default function ChatPage() {
                     onChange={(e) => saveProfile({ ...userProfile, name: e.target.value })}
                     placeholder={lang === 'ru' ? 'Например: Владимир' : 'e.g. John'}
                     className="w-full px-3 py-2 rounded-xl text-sm outline-none"
-                    style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', color: 'var(--foreground)' }}
+                    style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--foreground)' }}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold mb-1 text-neutral-300">
+                  <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--foreground)' }}>
                     {lang === 'ru' ? 'Сфера деятельности / Бизнес' : 'Business / Occupation'}
                   </label>
                   <input
@@ -1992,12 +2235,12 @@ export default function ChatPage() {
                     onChange={(e) => saveProfile({ ...userProfile, occupation: e.target.value })}
                     placeholder={lang === 'ru' ? 'Например: Предприниматель, IT-проекты, девелопмент...' : 'e.g. Entrepreneur, IT projects, real estate...'}
                     className="w-full px-3 py-2 rounded-xl text-sm outline-none"
-                    style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', color: 'var(--foreground)' }}
+                    style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--foreground)' }}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold mb-1 text-neutral-300">
+                  <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--foreground)' }}>
                     {lang === 'ru' ? 'Главные цели (жизненные, финансовые, бизнес)' : 'Main Life & Business Goals'}
                   </label>
                   <textarea
@@ -2006,12 +2249,12 @@ export default function ChatPage() {
                     onChange={(e) => saveProfile({ ...userProfile, goals: e.target.value })}
                     placeholder={lang === 'ru' ? 'Например: Выйти на оборот..., запустить благотворительный фонд, освоить новые рынки...' : 'e.g. Scale revenue to..., launch a charity foundation, expand into new markets...'}
                     className="w-full px-3 py-2 rounded-xl text-sm outline-none resize-none"
-                    style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', color: 'var(--foreground)' }}
+                    style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--foreground)' }}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold mb-1 text-neutral-300">
+                  <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--foreground)' }}>
                     {lang === 'ru' ? 'Текущие вызовы / Фокус внимания' : 'Current Challenges / Focus'}
                   </label>
                   <textarea
@@ -2020,7 +2263,7 @@ export default function ChatPage() {
                     onChange={(e) => saveProfile({ ...userProfile, challenges: e.target.value })}
                     placeholder={lang === 'ru' ? 'Например: Нехватка времени, дисциплина, подбор сильных партнеров...' : 'e.g. Time management, discipline, finding strong partners...'}
                     className="w-full px-3 py-2 rounded-xl text-sm outline-none resize-none"
-                    style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', color: 'var(--foreground)' }}
+                    style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--foreground)' }}
                   />
                 </div>
               </div>
@@ -2029,7 +2272,7 @@ export default function ChatPage() {
               <div className="pt-4 border-t space-y-3" style={{ borderColor: 'var(--border)' }}>
                 <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="font-semibold text-xs uppercase tracking-wider text-amber-200">
+                    <h4 className="font-semibold text-xs uppercase tracking-wider" style={{ color: 'var(--accent)' }}>
                       {lang === 'ru' ? 'Личные документы и заметки' : 'Personal Documents & Notes'}
                     </h4>
                     <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
@@ -2087,7 +2330,8 @@ export default function ChatPage() {
                     <div className="flex justify-end gap-2 pt-1">
                       <button
                         onClick={() => setIsAddingNote(false)}
-                        className="text-xs px-3 py-1 rounded-lg text-neutral-400 hover:text-white"
+                        className="text-xs px-3 py-1 rounded-lg"
+                        style={{ color: 'var(--text-muted)' }}
                       >
                         {lang === 'ru' ? 'Отмена' : 'Cancel'}
                       </button>
@@ -2104,7 +2348,7 @@ export default function ChatPage() {
 
                 {/* List of uploaded notes */}
                 {personalNotes.length === 0 ? (
-                  <div className="text-center py-2 text-xs text-neutral-500 italic">
+                  <div className="text-center py-2 text-xs italic" style={{ color: 'var(--text-muted)' }}>
                     {lang === 'ru' ? 'Пока нет прикрепленных документов' : 'No documents attached yet'}
                   </div>
                 ) : (
@@ -2116,17 +2360,18 @@ export default function ChatPage() {
                         style={{ background: 'var(--surface-2)', borderColor: 'var(--border)' }}
                       >
                         <div className="space-y-1 pr-3 max-w-[85%]">
-                          <div className="font-semibold text-amber-100 flex items-center gap-1.5">
+                          <div className="font-semibold flex items-center gap-1.5" style={{ color: 'var(--foreground)' }}>
                             <span>📄</span>
                             <span>{note.title}</span>
                           </div>
-                          <p className="text-[11px] text-neutral-400 line-clamp-2">
+                          <p className="text-[11px] line-clamp-2" style={{ color: 'var(--text-muted)' }}>
                             {note.content}
                           </p>
                         </div>
                         <button
                           onClick={() => handleDeleteNote(note.id)}
-                          className="text-neutral-500 hover:text-red-400 p-1"
+                          className="hover:text-red-400 p-1"
+                          style={{ color: 'var(--text-muted)' }}
                           title={lang === 'ru' ? 'Удалить' : 'Delete'}
                         >
                           ✕
@@ -2140,18 +2385,32 @@ export default function ChatPage() {
               {/* Section 4: Account & Multi-Device Cloud Sync */}
               <div className="pt-4 border-t space-y-3" style={{ borderColor: 'var(--border)' }}>
                 <div className="flex items-center justify-between">
-                  <h4 className="font-semibold text-xs uppercase tracking-wider text-amber-200 flex items-center gap-1.5">
+                  <h4 className="font-semibold text-xs uppercase tracking-wider flex items-center gap-1.5" style={{ color: 'var(--accent)' }}>
                     <span>☁️</span>
                     <span>{lang === 'ru' ? 'Аккаунт и синхронизация' : 'Account & Sync'}</span>
                   </h4>
                   <span
-                    className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${
-                      syncStatus === 'synced'
-                        ? 'bg-emerald-950/60 text-emerald-400 border border-emerald-800/60'
-                        : syncStatus === 'syncing'
-                        ? 'bg-amber-950/60 text-amber-300 border border-amber-800/60'
-                        : 'bg-neutral-800 text-neutral-400 border border-neutral-700'
-                    }`}
+                    className="text-[11px] px-2 py-0.5 rounded-full font-medium"
+                    style={{
+                      background:
+                        syncStatus === 'synced'
+                          ? 'rgba(16, 185, 129, 0.15)'
+                          : syncStatus === 'syncing'
+                          ? 'rgba(245, 158, 11, 0.15)'
+                          : 'rgba(239, 68, 68, 0.15)',
+                      color:
+                        syncStatus === 'synced'
+                          ? '#10b981'
+                          : syncStatus === 'syncing'
+                          ? '#f59e0b'
+                          : '#ef4444',
+                      border:
+                        syncStatus === 'synced'
+                          ? '1px solid rgba(16, 185, 129, 0.3)'
+                          : syncStatus === 'syncing'
+                          ? '1px solid rgba(245, 158, 11, 0.3)'
+                          : '1px solid rgba(239, 68, 68, 0.3)',
+                    }}
                   >
                     {syncStatus === 'synced'
                       ? (lang === 'ru' ? 'Подключено к облаку' : 'Synced')
@@ -2164,23 +2423,23 @@ export default function ChatPage() {
                 <div className="p-3.5 rounded-xl border space-y-3" style={{ background: 'var(--surface-2)', borderColor: 'var(--border)' }}>
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="text-[11px] text-neutral-400">
+                      <div className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
                         {lang === 'ru' ? 'Вы вошли как:' : 'Signed in as:'}
                       </div>
-                      <div className="text-xs font-mono font-semibold text-amber-200">
+                      <div className="text-xs font-mono font-semibold" style={{ color: 'var(--accent)' }}>
                         {authEmail || '—'}
                       </div>
                     </div>
 
                     <button
                       onClick={handleLogout}
-                      className="px-3 py-1.5 rounded-lg text-xs font-medium text-red-400 hover:text-red-300 hover:bg-red-950/40 border border-red-900/40 transition-colors"
+                      className="px-3 py-1.5 rounded-lg text-xs font-medium text-red-500 hover:text-red-600 hover:bg-red-500/10 border border-red-500/30 transition-colors"
                     >
                       {lang === 'ru' ? 'Выйти из аккаунта' : 'Sign Out'}
                     </button>
                   </div>
 
-                  <p className="text-[11px] text-neutral-400 leading-relaxed">
+                  <p className="text-[11px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>
                     {lang === 'ru'
                       ? 'Все ваши диалоги, карточка ученика и обязательства привязаны к вашему Email и автоматически синхронизируются на телефоне и компьютере.'
                       : 'All your history and commitments are linked to this email and synced across all your devices.'}
