@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="ru" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PETER DANIELS AI — Личный советник совета директоров</title>
+  <meta name="description" content="Персональная цифровая система стратегического разбора на базе характера, бизнес-принципов и наследия Питера Дэниелса. Без дешёвой вежливости. Без права на слабость.">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            graphite: '#0E1012',
+            charcoal: '#16191D',
+            charcoalLight: '#1F2329',
+            gold: {
+              DEFAULT: '#C8A962',
+              light: '#E5C987',
+              dark: '#9E7E38',
+              muted: 'rgba(200, 169, 98, 0.15)',
+              border: 'rgba(200, 169, 98, 0.28)'
+            },
+            ivory: {
+              DEFAULT: '#F5F4F0',
+              muted: '#A5A8B0'
+            }
+          },
+          fontFamily: {
+            serif: ['Cinzel', 'Georgia', 'serif'],
+            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif']
+          },
+          boxShadow: {
+            'gold-glow': '0 0 35px -5px rgba(200, 169, 98, 0.18)',
+            'gold-card': '0 8px 30px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(200, 169, 98, 0.2)',
+            'executive': '0 20px 50px -10px rgba(0, 0, 0, 0.8), 0 0 20px rgba(200, 169, 98, 0.08)'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #0E1012;
+      color: #F5F4F0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      overflow-x: hidden;
+      selection-background-color: #C8A962;
+      selection-color: #0E1012;
+    }
+
+    ::selection {
+      background: #C8A962;
+      color: #0E1012;
+    }
+
+    /* Ambient noise & grid overlay */
+    .bg-grid-pattern {
+      background-size: 50px 50px;
+      background-image: 
+        linear-gradient(to right, rgba(200, 169, 98, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(200, 169, 98, 0.03) 1px, transparent 1px);
+    }
+
+    .gold-gradient-text {
+      background: linear-gradient(135deg, #F5F4F0 0%, #E5C987 50%, #C8A962 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .gold-border-gradient {
+      border-image: linear-gradient(to bottom, rgba(200, 169, 98, 0.4), rgba(200, 169, 98, 0.05)) 1;
+    }
+
+    /* Custom subtle scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0E1012;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1F2329;
+      border: 1px solid rgba(200, 169, 98, 0.2);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #C8A962;
+    }
+  </style>
+</head>
+<body class="bg-graphite text-ivory antialiased min-h-screen relative flex flex-col justify-between">
+
+  <!-- Background Ambience -->
+  <div class="fixed inset-0 bg-grid-pattern pointer-events-none z-0"></div>
+  <div class="fixed top-0 left-1/2 -translate-x-1/2 w-[800px] h-[450px] bg-gradient-to-b from-gold/5 via-gold/0 to-transparent blur-[120px] pointer-events-none z-0"></div>
+
+  <!-- Top Executive Header Status Bar -->
+  <header class="relative z-50 border-b border-gold-border/40 bg-graphite/90 backdrop-blur-md sticky top-0 transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16 sm:h-20">
+        
+        <!-- Logo / Monogram -->
+        <a href="#" class="flex items-center space-x-3 group">
+          <div class="w-10 h-10 rounded-sm bg-charcoal border border-gold/40 flex items-center justify-center shadow-gold-glow group-hover:border-gold transition-colors">
+            <span class="font-serif font-bold text-gold text-lg tracking-wider">PD</span>
+          </div>
+          <div class="flex flex-col">
+            <span class="font-serif tracking-[0.2em] text-sm sm:text-base font-bold text-ivory group-hover:text-gold transition-colors">PETER DANIELS AI</span>
+            <span class="text-[10px] tracking-widest text-gold/70 uppercase">Executive Intelligence</span>
+          </div>
+        </a>
+
+        <!-- Status Indicator Pill -->
+        <div class="hidden md:flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-charcoal border border-gold/30 text-[11px] tracking-wider font-mono text-ivory-muted">
+          <span class="relative flex h-2 w-2">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-gold opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-gold"></span>
+          </span>
+          <span class="text-ivory font-medium">30:00 EXECUTIVE TIMEBOX</span>
+          <span class="text-gold/40">•</span>
+          <span class="text-gold/90 font-medium">SECURE ENCRYPTED SESSION</span>
+        </div>
+
+        <!-- Navigation & Action -->
+        <div class="flex items-center space-x-4">
+          <nav class="hidden lg:flex items-center space-x-6 text-xs uppercase tracking-widest text-ivory-muted">
+            <a href="#foundation" class="hover:text-gold transition-colors">Фундамент</a>
+            <a href="#protocol" class="hover:text-gold transition-colors">Регламент</a>
+            <a href="#architecture" class="hover:text-gold transition-colors">Архитектура</a>
+            <a href="#pricing" class="hover:text-gold transition-colors">Тарифы</a>
+            <a href="#faq" class="hover:text-gold transition-colors">FAQ</a>
+          </nav>
+          
+          <button onclick="openAudienceModal('Разовая аудиенция')" class="relative inline-flex items-center justify-center px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold tracking-wider uppercase text-graphite bg-gradient-to-r from-gold-light via-gold to-gold-dark hover:brightness-110 active:scale-95 transition-all shadow-gold-glow rounded-sm">
+            <span>Аудиенция</span>
+            <i data-lucide="arrow-right" class="w-4 h-4 ml-1.5"></i>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <main class="relative z-10 flex-grow">
+
+    <!-- 1. HERO SECTION -->
+    <section class="relative pt-12 pb-20 md:pt-20 md:pb-32 overflow-hidden">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        
+        <!-- Status Pill for Mobile -->
+        <div class="inline-flex md:hidden items-center space-x-2 px-3 py-1 mb-6 rounded-full bg-charcoal border border-gold/30 text-[10px] tracking-wider font-mono text-ivory-muted">
+          <span class="h-1.5 w-1.5 rounded-full bg-gold animate-pulse"></span>
+          <span class="text-ivory font-medium">30:00 HARD TIMEBOX • ENCRYPTED</span>
+        </div>
+
+        <!-- Pre-Header Tag -->
+        <div class="inline-flex items-center space-x-2 mb-6 px-4 py-1.5 bg-gold/5 border border-gold/20 rounded-full">
+          <span class="text-[11px] uppercase tracking-[0.25em] text-gold font-semibold">Цифровой двойник легенды мирового бизнеса</span>
+        </div>
+
+        <!-- Main Title -->
+        <h1 class="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-serif font-extrabold tracking-tight text-ivory max-w-5xl mx-auto leading-[1.15]">
+          Личный советник совета директоров. <br class="hidden sm:block" />
+          <span class="gold-gradient-text">Без дешёвой вежливости.</span> <br />
+          Без права на слабость.
+        </h1>
+
+        <!-- Subtitle -->
+        <p class="mt-6 sm:mt-8 text-base sm:text-lg md:text-xl text-ivory-muted max-w-3xl mx-auto font-light leading-relaxed">
+          Персональная цифровая система стратегического разбора на базе характера, бизнес-принципов и наследия <span class="text-ivory font-medium">Питера Дэниелса</span>. Оцифрованный интеллект человека, начавшего путь неграмотным каменщиком и построившего империю с капиталом в сотни миллионов долларов.
+        </p>
+
+        <!-- CTA Buttons & Meta -->
+        <div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+          <button onclick="openAudienceModal('Разовая аудиенция')" class="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-gold-light via-gold to-gold-dark text-graphite font-serif font-bold text-sm tracking-wider uppercase rounded-sm hover:shadow-gold-glow hover:brightness-110 transition-all transform hover:-translate-y-0.5">
+            Назначить 30-минутную аудиенцию →
+          </button>
+          <a href="#protocol" class="w-full sm:w-auto px-7 py-4 bg-charcoal/80 border border-gold/30 hover:border-gold text-ivory text-sm tracking-wider uppercase font-medium rounded-sm transition-all hover:bg-charcoal">
+            Регламент сессии
+          </a>
+        </div>
+
+        <!-- Microtext under CTA -->
+        <div class="mt-6 flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-xs text-ivory-muted font-mono tracking-wider">
+          <span class="flex items-center"><i data-lucide="book" class="w-3.5 h-3.5 text-gold mr-1.5"></i> 12 книг</span>
+          <span class="text-gold/40">•</span>
+          <span class="flex items-center"><i data-lucide="video" class="w-3.5 h-3.5 text-gold mr-1.5"></i> 34 практических видеоурока</span>
+          <span class="text-gold/40">•</span>
+          <span class="flex items-center"><i data-lucide="archive" class="w-3.5 h-3.5 text-gold mr-1.5"></i> 72 архивных выступления</span>
+          <span class="text-gold/40">•</span>
+          <span class="flex items-center text-gold font-semibold"><i data-lucide="shield-check" class="w-3.5 h-3.5 mr-1.5"></i> Без пустых разговоров</span>
+        </div>
+
+        <!-- 1.1 Architectural UI Mockup (Desktop Workspace Mockup) -->
+        <div class="mt-14 sm:mt-18 max-w-5xl mx-auto">
+          <div class="relative rounded-lg border border-gold/40 bg-charcoal shadow-executive overflow-hidden text-left">
+            
+            <!-- Window Titlebar -->
+            <div class="px-4 py-3 bg-graphite border-b border-gold/20 flex flex-wrap items-center justify-between gap-3">
+              <div class="flex items-center space-x-3">
+                <div class="flex space-x-1.5">
+                  <span class="w-2.5 h-2.5 rounded-full bg-red-500/80"></span>
+                  <span class="w-2.5 h-2.5 rounded-full bg-yellow-500/80"></span>
+                  <span class="w-2.5 h-2.5 rounded-full bg-green-500/80"></span>
+                </div>
+                <span class="font-serif font-bold text-xs tracking-wider text-gold">PETER DANIELS AI • EXECUTIVE DESK</span>
+              </div>
+              
+              <div class="flex items-center space-x-3 font-mono text-xs">
+                <!-- Live Interactive Timer Box -->
+                <div class="flex items-center space-x-2 px-2.5 py-1 rounded bg-charcoal border border-gold/40 text-gold">
+                  <i data-lucide="clock" class="w-3.5 h-3.5 animate-pulse"></i>
+                  <span id="hero-countdown" class="font-bold tracking-widest">28:14</span>
+                </div>
+                <!-- Commitments Badge -->
+                <div class="px-2.5 py-1 rounded bg-gold/10 border border-gold/30 text-ivory flex items-center space-x-1.5">
+                  <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-gold"></i>
+                  <span>Commitments: <strong id="commitments-badge-count" class="text-gold">3</strong></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Terminal / Workspace Body (Split View) -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-gold/15">
+              
+              <!-- Dialogue Stream (Left - 8 cols) -->
+              <div class="lg:col-span-8 p-5 sm:p-7 space-y-6 bg-gradient-to-b from-charcoal to-graphite/95">
+                
+                <!-- User Question -->
+                <div class="border-l-2 border-ivory/30 pl-4 py-1">
+                  <div class="flex items-center space-x-2 mb-1.5">
+                    <span class="text-[11px] font-mono tracking-widest text-ivory-muted uppercase">[ВЫ • CEO]:</span>
+                  </div>
+                  <p class="text-sm sm:text-base text-ivory italic leading-relaxed">
+                    «Мы уперлись в потолок масштабирования. Рынок проседает, команда выгорает, я не понимаю, куда направить главный удар».
+                  </p>
+                </div>
+
+                <!-- Peter Daniels AI Response -->
+                <div class="border-l-2 border-gold pl-4 py-1 bg-gold/5 rounded-r-md">
+                  <div class="flex items-center space-x-2 mb-2">
+                    <span class="text-[11px] font-mono tracking-widest text-gold uppercase font-bold">[ПИТЕР ДЭНИЕЛС AI]:</span>
+                    <span class="text-[9px] px-1.5 py-0.5 rounded bg-gold/20 text-gold font-mono uppercase">Verbatim Principles</span>
+                  </div>
+                  <p class="text-sm sm:text-base text-ivory leading-relaxed font-sans">
+                    «Перестань жалеть себя и списывать несобранность на кризис. Рынок не виноват в том, что ты не требуешь стандартов от себя и своих топов.
+                  </p>
+                  <p class="mt-2 text-sm sm:text-base text-gold-light font-medium leading-relaxed">
+                    Слова стоят дёшево. Назови мне одну операцию, которая генерирует 80% твоей чистой маржи, и почему ты до сих пор не утроил давление там?»
+                  </p>
+                </div>
+
+                <!-- Input Field Simulation -->
+                <div class="pt-2">
+                  <div class="flex items-center justify-between px-3 py-2 rounded bg-graphite border border-gold/20 text-xs text-ivory-muted font-mono">
+                    <span class="flex items-center">
+                      <span class="text-gold mr-2">></span>
+                      <span>Введите ответ... Оправдания не принимаются.</span>
+                    </span>
+                    <span class="text-[10px] text-gold/60">Press ↵ Enter</span>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Commitments Engine (Right - 4 cols) -->
+              <div class="lg:col-span-4 p-5 sm:p-6 bg-charcoalLight/60 flex flex-col justify-between">
+                <div>
+                  <div class="flex items-center justify-between mb-4 border-b border-gold/20 pb-2">
+                    <span class="text-xs font-serif font-bold tracking-wider text-gold uppercase flex items-center">
+                      <i data-lucide="target" class="w-3.5 h-3.5 mr-1.5"></i>
+                      Commitments Engine
+                    </span>
+                    <span class="text-[10px] text-ivory-muted font-mono">3 Зафиксировано</span>
+                  </div>
+
+                  <p class="text-[11px] text-ivory-muted mb-3 font-mono">
+                    Кликните чекбокс, чтобы подтвердить закрытие директивы:
+                  </p>
+
+                  <!-- Interactive Tasks List -->
+                  <div class="space-y-2.5" id="commitments-interactive-list">
+                    <label class="flex items-start space-x-2.5 p-2 rounded bg-graphite/70 border border-gold/20 cursor-pointer hover:border-gold/50 transition-colors">
+                      <input type="checkbox" onchange="triggerCommitmentConfetti(this)" class="mt-0.5 rounded border-gold/40 text-gold focus:ring-0 focus:ring-offset-0 bg-charcoal">
+                      <span class="text-xs text-ivory leading-tight">Провести хирургический аудит 1 маржинального канала</span>
+                    </label>
+
+                    <label class="flex items-start space-x-2.5 p-2 rounded bg-graphite/70 border border-gold/20 cursor-pointer hover:border-gold/50 transition-colors">
+                      <input type="checkbox" onchange="triggerCommitmentConfetti(this)" class="mt-0.5 rounded border-gold/40 text-gold focus:ring-0 focus:ring-offset-0 bg-charcoal">
+                      <span class="text-xs text-ivory leading-tight">Уволить коммерческого директора за несоблюдение стандартов</span>
+                    </label>
+
+                    <label class="flex items-start space-x-2.5 p-2 rounded bg-graphite/70 border border-gold/20 cursor-pointer hover:border-gold/50 transition-colors">
+                      <input type="checkbox" onchange="triggerCommitmentConfetti(this)" class="mt-0.5 rounded border-gold/40 text-gold focus:ring-0 focus:ring-offset-0 bg-charcoal">
+                      <span class="text-xs text-ivory leading-tight">Заблокировать новые расходы до закрытия кассового разрыва</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-t border-gold/15">
+                  <div class="flex items-center justify-between text-[11px] text-ivory-muted font-mono">
+                    <span>Статус чести:</span>
+                    <span class="text-gold font-bold">100% ПОД ОТЧЕТОМ</span>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 2. ПОЧЕМУ СТАНДАРТНЫЙ ИИ ДЕЛАЕТ ВАС СЛАБЕЕ (Анатомия проблемы) -->
+    <section class="py-20 md:py-28 bg-charcoal border-y border-gold/15 relative">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="text-center max-w-3xl mx-auto mb-16">
+          <span class="text-xs font-mono uppercase tracking-[0.25em] text-gold font-semibold">Анатомия проблемы</span>
+          <h2 class="mt-3 text-2xl sm:text-4xl md:text-5xl font-serif font-bold text-ivory leading-tight">
+            Большинство нейросетей обучены быть услужливыми лакеями. <br />
+            <span class="text-gold">Бизнесу нужен судья.</span>
+          </h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+          
+          <!-- Левая колонка: Вакуум правды -->
+          <div class="space-y-6">
+            <h3 class="text-lg sm:text-xl font-serif font-bold text-ivory">
+              Когда вы поднимаетесь на вершину компании, вокруг возникает опасный вакуум правды:
+            </h3>
+            
+            <ul class="space-y-4 text-sm sm:text-base text-ivory-muted">
+              <li class="flex items-start">
+                <span class="w-5 h-5 rounded-full bg-red-500/10 text-red-400 flex items-center justify-center mr-3 mt-0.5 flex-shrink-0 text-xs font-bold">✕</span>
+                <span><strong class="text-ivory">Подчинённые фильтруют плохие новости</strong>, опасаясь гнева или потери места.</span>
+              </li>
+              <li class="flex items-start">
+                <span class="w-5 h-5 rounded-full bg-red-500/10 text-red-400 flex items-center justify-center mr-3 mt-0.5 flex-shrink-0 text-xs font-bold">✕</span>
+                <span><strong class="text-ivory">Партнёры преследуют собственные интересы</strong> и скрытые мотивы.</span>
+              </li>
+              <li class="flex items-start">
+                <span class="w-5 h-5 rounded-full bg-red-500/10 text-red-400 flex items-center justify-center mr-3 mt-0.5 flex-shrink-0 text-xs font-bold">✕</span>
+                <span><strong class="text-ivory">Друзья и семья не понимают</strong> колоссального масштаба вашей финансовой и личной ответственности.</span>
+              </li>
+              <li class="flex items-start">
+                <span class="w-5 h-5 rounded-full bg-red-500/10 text-red-400 flex items-center justify-center mr-3 mt-0.5 flex-shrink-0 text-xs font-bold">✕</span>
+                <span><strong class="text-ivory">А стандартные модели ИИ запрограммированы нравиться:</strong> они извиняются, поддакивают каждой вашей гипотезе и оборачивают банальности в сладкую корпоративную вежливость.</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Правая колонка: Вердикт и цитата -->
+          <div class="p-8 sm:p-10 rounded-lg bg-graphite border border-gold/30 shadow-gold-card relative">
+            <div class="absolute -top-3 left-8 px-3 py-1 bg-gold text-graphite text-[10px] font-mono uppercase font-bold tracking-widest">
+              Аксиома совета директоров
+            </div>
+            
+            <blockquote class="text-xl sm:text-2xl font-serif text-ivory leading-snug font-bold border-l-2 border-gold pl-4 py-1">
+              «Угодливый советник — прямой путь к разорению.»
+            </blockquote>
+
+            <p class="mt-6 text-sm text-ivory-muted leading-relaxed">
+              Вам не нужен виртуальный секретарь, который одобрит стратегическую ошибку. Вам нужен наставник уровня глобального совета директоров, который вскроет самообман за 90 секунд, потребует отчета за каждое обещание и заставит действовать на пределе вашего подлинного масштаба.
+            </p>
+
+            <div class="mt-6 pt-4 border-t border-gold/15 flex items-center justify-between">
+              <span class="text-xs font-mono text-gold tracking-wider">PETER DANIELS AI</span>
+              <span class="text-xs text-ivory-muted font-mono">0% Лести • 100% Твердости</span>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 3. ФУНДАМЕНТ: Оцифрованный капитал Питера Дэниелса -->
+    <section id="foundation" class="py-20 md:py-32 bg-graphite relative">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="text-center max-w-3xl mx-auto mb-16">
+          <span class="text-xs font-mono uppercase tracking-[0.25em] text-gold font-semibold">Фундамент системы</span>
+          <h2 class="mt-3 text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-ivory">
+            Оцифрованный капитал Питера Дэниелса
+          </h2>
+          <p class="mt-4 text-base sm:text-lg text-ivory-muted">
+            Этот интеллект опирается не на абстрактные статьи из интернета. В его основе — оцифрованная жизнь титана.
+          </p>
+        </div>
+
+        <!-- Биография: 5 твердых вех -->
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-16">
+          <div class="p-5 rounded bg-charcoal border border-gold/20 flex flex-col justify-between">
+            <span class="text-2xl font-serif font-bold text-gold">01</span>
+            <p class="mt-4 text-xs text-ivory leading-relaxed">
+              Родился в крайней нищете в семье, где не было стабильного дохода.
+            </p>
+          </div>
+          <div class="p-5 rounded bg-charcoal border border-gold/20 flex flex-col justify-between">
+            <span class="text-2xl font-serif font-bold text-gold">02</span>
+            <p class="mt-4 text-xs text-ivory leading-relaxed">
+              До 26 лет не умел читать и писать, работая каменщиком на тяжелых стройках.
+            </p>
+          </div>
+          <div class="p-5 rounded bg-charcoal border border-gold/20 flex flex-col justify-between">
+            <span class="text-2xl font-serif font-bold text-gold">03</span>
+            <p class="mt-4 text-xs text-ivory leading-relaxed">
+              Прошел через три сокрушительных банкротства, выплатив каждый долг до цента, и создал глобальную финансовую империю.
+            </p>
+          </div>
+          <div class="p-5 rounded bg-charcoal border border-gold/20 flex flex-col justify-between">
+            <span class="text-2xl font-serif font-bold text-gold">04</span>
+            <p class="mt-4 text-xs text-ivory leading-relaxed">
+              Консультировал мировых лидеров, правительственные делегации и транснациональные корпорации.
+            </p>
+          </div>
+          <div class="p-5 rounded bg-charcoal border border-gold/20 flex flex-col justify-between">
+            <span class="text-2xl font-serif font-bold text-gold">05</span>
+            <p class="mt-4 text-xs text-ivory leading-relaxed">
+              Создал концепцию «Судьба 3-го тысячелетия» и доказал: честность, вера и железная воля создают непотопляемые бизнесы.
+            </p>
+          </div>
+        </div>
+
+        <!-- Таблица оцифрованного фонда -->
+        <div class="rounded-lg border border-gold/30 bg-charcoal overflow-hidden shadow-gold-card">
+          <div class="px-6 py-4 bg-charcoalLight/70 border-b border-gold/20 flex items-center justify-between">
+            <h3 class="font-serif font-bold text-sm tracking-wider uppercase text-gold">
+              Структура твердой базы знаний
+            </h3>
+            <span class="text-xs font-mono text-ivory-muted">100% Верифицированный архив</span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+              <thead class="bg-graphite/80 text-[11px] font-mono uppercase tracking-wider text-gold/80 border-b border-gold/20">
+                <tr>
+                  <th scope="col" class="py-4 px-6">Твердый источник</th>
+                  <th scope="col" class="py-4 px-6">Объем оцифрованного фонда</th>
+                  <th scope="col" class="py-4 px-6">Что исключено</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gold/10 font-sans text-ivory-muted text-xs sm:text-sm">
+                <tr class="hover:bg-charcoalLight/40 transition-colors">
+                  <td class="py-4 px-6 font-semibold text-ivory flex items-center">
+                    <i data-lucide="book-open" class="w-4 h-4 text-gold mr-2.5"></i>
+                    Фундаментальные книги
+                  </td>
+                  <td class="py-4 px-6 text-gold font-bold">12 оцифрованных трудов без сокращений</td>
+                  <td class="py-4 px-6 text-red-300/80">Беллетристика и абстрактная мотивация</td>
+                </tr>
+                <tr class="hover:bg-charcoalLight/40 transition-colors">
+                  <td class="py-4 px-6 font-semibold text-ivory flex items-center">
+                    <i data-lucide="video" class="w-4 h-4 text-gold mr-2.5"></i>
+                    Практические видеокурсы
+                  </td>
+                  <td class="py-4 px-6 text-gold font-bold">5 системных программ (34 урока) с таймкодами</td>
+                  <td class="py-4 px-6 text-red-300/80">Теоретическая лекционная вода</td>
+                </tr>
+                <tr class="hover:bg-charcoalLight/40 transition-colors">
+                  <td class="py-4 px-6 font-semibold text-ivory flex items-center">
+                    <i data-lucide="mic" class="w-4 h-4 text-gold mr-2.5"></i>
+                    Закрытые архивы
+                  </td>
+                  <td class="py-4 px-6 text-gold font-bold">72 выступления, семинара и редких интервью</td>
+                  <td class="py-4 px-6 text-red-300/80">Любые домыслы сторонних комментаторов</td>
+                </tr>
+                <tr class="hover:bg-charcoalLight/40 transition-colors">
+                  <td class="py-4 px-6 font-semibold text-ivory flex items-center">
+                    <i data-lucide="cpu" class="w-4 h-4 text-gold mr-2.5"></i>
+                    База знаний
+                  </td>
+                  <td class="py-4 px-6 text-gold font-bold">Хирургически вычищенный массив принципов</td>
+                  <td class="py-4 px-6 text-red-300/80">Галлюцинации и шаблонные языковые клише</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 4. РЕГЛАМЕНТ АУДИЕНЦИИ: 30 минут без права на нытьё -->
+    <section id="protocol" class="py-20 md:py-32 bg-charcoal border-t border-gold/15 relative">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="text-center max-w-3xl mx-auto mb-16">
+          <span class="text-xs font-mono uppercase tracking-[0.25em] text-gold font-semibold">Механика Executive Hard Timebox</span>
+          <h2 class="mt-3 text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-ivory">
+            Регламент аудиенции: 30 минут без права на нытьё
+          </h2>
+          <p class="mt-4 text-base sm:text-lg text-ivory-muted">
+            Личное время Питера Дэниелса стоило тысячи долларов в минуту. Он презирал пустословие. Именно поэтому диалог с системой подчинен жесткому регламенту.
+          </p>
+        </div>
+
+        <!-- 5 Шагов Регламента -->
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
+          
+          <div class="p-6 rounded bg-graphite border border-gold/25 relative group hover:border-gold transition-colors">
+            <span class="text-xs font-mono text-gold font-bold tracking-widest uppercase">ШАГ 01</span>
+            <h4 class="mt-3 text-base font-serif font-bold text-ivory">Никакой воды</h4>
+            <p class="mt-2 text-xs text-ivory-muted leading-relaxed">
+              Вы входите в сессию с конкретным вызовом: сделка, предательство, кризис ликвидности, масштабное решение.
+            </p>
+          </div>
+
+          <div class="p-6 rounded bg-graphite border border-gold/25 relative group hover:border-gold transition-colors">
+            <span class="text-xs font-mono text-gold font-bold tracking-widest uppercase">ШАГ 02</span>
+            <h4 class="mt-3 text-base font-serif font-bold text-ivory">Отсчет 30:00</h4>
+            <p class="mt-2 text-xs text-ivory-muted leading-relaxed">
+              Сессия не ставится на паузу. Каждая минута вынуждает отсекать шелуху и говорить строго о сути.
+            </p>
+          </div>
+
+          <div class="p-6 rounded bg-graphite border border-gold/25 relative group hover:border-gold transition-colors">
+            <span class="text-xs font-mono text-gold font-bold tracking-widest uppercase">ШАГ 03</span>
+            <h4 class="mt-3 text-base font-serif font-bold text-ivory">Хирургический разбор</h4>
+            <p class="mt-2 text-xs text-ivory-muted leading-relaxed">
+              Питер препарирует логику вашего решения через призму 50-летнего опыта побед и падений.
+            </p>
+          </div>
+
+          <div class="p-6 rounded bg-graphite border border-gold/25 relative group hover:border-gold transition-colors">
+            <span class="text-xs font-mono text-gold font-bold tracking-widest uppercase">ШАГ 04</span>
+            <h4 class="mt-3 text-base font-serif font-bold text-ivory">Commitments Engine</h4>
+            <p class="mt-2 text-xs text-ivory-muted leading-relaxed">
+              Вы обязаны выйти из кабинета с решениями, за которые поручитесь честью. Фиксация в реестр.
+            </p>
+          </div>
+
+          <div class="p-6 rounded bg-graphite border border-gold/25 relative group hover:border-gold transition-colors">
+            <span class="text-xs font-mono text-gold font-bold tracking-widest uppercase">ШАГ 05</span>
+            <h4 class="mt-3 text-base font-serif font-bold text-ivory">Финал аудиенции</h4>
+            <p class="mt-2 text-xs text-ivory-muted leading-relaxed">
+              Ровно через 30 минут экран закрывается: <em class="text-gold">«Время вышло. Хватит говорить — иди и победи!»</em>
+            </p>
+          </div>
+
+        </div>
+
+        <!-- Модуль Commitments: переход от размышлений к обязательствам -->
+        <div class="mt-16 p-8 sm:p-10 rounded-lg bg-charcoalLight/40 border border-gold/30">
+          <div class="max-w-3xl">
+            <div class="inline-flex items-center space-x-2 px-3 py-1 bg-gold/10 border border-gold/30 rounded text-xs font-mono text-gold mb-3">
+              <i data-lucide="check-check" class="w-4 h-4"></i>
+              <span>Модуль Commitments</span>
+            </div>
+            <h3 class="text-xl sm:text-2xl font-serif font-bold text-ivory">
+              Переход от размышлений к твёрдым обязательствам
+            </h3>
+            <p class="mt-3 text-sm sm:text-base text-ivory-muted leading-relaxed">
+              В правой панели диалога формируется интерактивный реестр ваших обязательств:
+            </p>
+            <ul class="mt-4 space-y-2.5 text-sm text-ivory">
+              <li class="flex items-center">
+                <i data-lucide="shield-alert" class="w-4 h-4 text-red-400 mr-2.5 flex-shrink-0"></i>
+                <span>Никаких абстрактных заметок «подумать об этом позже».</span>
+              </li>
+              <li class="flex items-center">
+                <i data-lucide="zap" class="w-4 h-4 text-gold mr-2.5 flex-shrink-0"></i>
+                <span>Только прямые действия: <strong>уволить, подписать, перестроить, позвонить</strong>.</span>
+              </li>
+              <li class="flex items-center">
+                <i data-lucide="sparkles" class="w-4 h-4 text-gold mr-2.5 flex-shrink-0"></i>
+                <span>Вы лично подтверждаете каждый пункт. Система фиксирует ваше слово, отмечая рубеж победным салютом интерфейса — как напоминание о цене данного обещания.</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 5. АРХИТЕКТУРА ИНСТРУМЕНТА -->
+    <section id="architecture" class="py-20 md:py-32 bg-graphite relative">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="text-center max-w-3xl mx-auto mb-16">
+          <span class="text-xs font-mono uppercase tracking-[0.25em] text-gold font-semibold">Инженерный стек</span>
+          <h2 class="mt-3 text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-ivory">
+            Архитектура инструмента
+          </h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          
+          <!-- Карточка 1 -->
+          <div class="p-8 rounded-lg bg-charcoal border border-gold/25 hover:border-gold transition-all duration-300 shadow-gold-card flex flex-col justify-between">
+            <div>
+              <div class="w-12 h-12 rounded bg-gold/10 border border-gold/40 flex items-center justify-center text-gold mb-6">
+                <i data-lucide="mic" class="w-6 h-6"></i>
+              </div>
+              <h3 class="text-lg font-serif font-bold text-ivory mb-3">
+                Закрытая аудиолиния <br />
+                <span class="text-xs font-mono text-gold uppercase tracking-wider">(Voice Interface RU / EN)</span>
+              </h3>
+              <p class="text-xs sm:text-sm text-ivory-muted leading-relaxed">
+                Разговаривайте в автомобиле, перед жесткими переговорами или на прогулке. Система воспринимает нюансы интонации и отвечает поставленным, весомым голосом наставника.
+              </p>
+            </div>
+            <div class="mt-6 pt-4 border-t border-gold/15 text-[11px] font-mono text-gold/70">
+              Low-latency WebRTC Voice
+            </div>
+          </div>
+
+          <!-- Карточка 2 -->
+          <div class="p-8 rounded-lg bg-charcoal border border-gold/25 hover:border-gold transition-all duration-300 shadow-gold-card flex flex-col justify-between">
+            <div>
+              <div class="w-12 h-12 rounded bg-gold/10 border border-gold/40 flex items-center justify-center text-gold mb-6">
+                <i data-lucide="refresh-cw" class="w-6 h-6"></i>
+              </div>
+              <h3 class="text-lg font-serif font-bold text-ivory mb-3">
+                Сквозная синхронизация профиля <br />
+                <span class="text-xs font-mono text-gold uppercase tracking-wider">(Multi-device Cloud)</span>
+              </h3>
+              <p class="text-xs sm:text-sm text-ivory-muted leading-relaxed">
+                Каждое принятое обязательство, протокол сессии и стратегические векторы зашифрованы и доступны на iPhone, iPad и Mac в режиме реального времени.
+              </p>
+            </div>
+            <div class="mt-6 pt-4 border-t border-gold/15 text-[11px] font-mono text-gold/70">
+              End-to-End Encryption
+            </div>
+          </div>
+
+          <!-- Карточка 3 -->
+          <div class="p-8 rounded-lg bg-charcoal border border-gold/25 hover:border-gold transition-all duration-300 shadow-gold-card flex flex-col justify-between">
+            <div>
+              <div class="w-12 h-12 rounded bg-gold/10 border border-gold/40 flex items-center justify-center text-gold mb-6">
+                <i data-lucide="compass" class="w-6 h-6"></i>
+              </div>
+              <h3 class="text-lg font-serif font-bold text-ivory mb-3">
+                Реестр личного наследия <br />
+                <span class="text-xs font-mono text-gold uppercase tracking-wider">(Legacy Tracking Engine)</span>
+              </h3>
+              <p class="text-xs sm:text-sm text-ivory-muted leading-relaxed">
+                Система помнит ваши глобальные цели, финансовые обязательства и слабые места, отслеживая, держите ли вы слово от сессии к сессии.
+              </p>
+            </div>
+            <div class="mt-6 pt-4 border-t border-gold/15 text-[11px] font-mono text-gold/70">
+              Continuity Memory Vector
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 6. МАНИФЕСТ ДОСТУПА -->
+    <section class="py-20 md:py-28 bg-charcoal border-y border-gold/15 relative">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="text-center max-w-3xl mx-auto mb-16">
+          <span class="text-xs font-mono uppercase tracking-[0.25em] text-gold font-semibold">Фильтр отбора</span>
+          <h2 class="mt-3 text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-ivory">
+            Манифест доступа
+          </h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          
+          <!-- Кому вход открыт -->
+          <div class="p-8 rounded-lg bg-graphite border border-emerald-500/30 relative">
+            <div class="flex items-center space-x-2 text-emerald-400 font-serif font-bold text-base mb-6 uppercase tracking-wider">
+              <i data-lucide="check-circle" class="w-5 h-5"></i>
+              <span>Кому вход открыт:</span>
+            </div>
+            <ul class="space-y-4 text-xs sm:text-sm text-ivory leading-relaxed">
+              <li class="flex items-start">
+                <span class="text-emerald-400 mr-2.5 font-bold">✔</span>
+                <span><strong>Основателям бизнеса</strong>, управляющим сотнями людей и миллионными оборотами.</span>
+              </li>
+              <li class="flex items-start">
+                <span class="text-emerald-400 mr-2.5 font-bold">✔</span>
+                <span><strong>Лидерам</strong>, строящим компании на принципах честности, твердого слова и христианской этики созидания.</span>
+              </li>
+              <li class="flex items-start">
+                <span class="text-emerald-400 mr-2.5 font-bold">✔</span>
+                <span><strong>Предпринимателям в эпицентре масштабного вызова</strong>, которым нужна непоколебимая опора и трезвый расчет.</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Кому система откажет -->
+          <div class="p-8 rounded-lg bg-graphite border border-red-500/30 relative">
+            <div class="flex items-center space-x-2 text-red-400 font-serif font-bold text-base mb-6 uppercase tracking-wider">
+              <i data-lucide="alert-octagon" class="w-5 h-5"></i>
+              <span>Кому система откажет в пользе:</span>
+            </div>
+            <ul class="space-y-4 text-xs sm:text-sm text-ivory-muted leading-relaxed">
+              <li class="flex items-start">
+                <span class="text-red-400 mr-2.5 font-bold">✕</span>
+                <span>Искателям «волшебных кнопок», легких схем и пассивного дохода без личной ответственности.</span>
+              </li>
+              <li class="flex items-start">
+                <span class="text-red-400 mr-2.5 font-bold">✕</span>
+                <span>Любителям пространных философских бесед без готовности внедрять решения в течение следующих 24 часов.</span>
+              </li>
+              <li class="flex items-start">
+                <span class="text-red-400 mr-2.5 font-bold">✕</span>
+                <span>Тем, чье эго требует постоянной похвалы и поглаживания от алгоритмов.</span>
+              </li>
+            </ul>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 7. ФОРМАТЫ ДОСТУПА (ТАРИФЫ) -->
+    <section id="pricing" class="py-20 md:py-32 bg-graphite relative">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="text-center max-w-3xl mx-auto mb-16">
+          <span class="text-xs font-mono uppercase tracking-[0.25em] text-gold font-semibold">Инвестиция в твердость решений</span>
+          <h2 class="mt-3 text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-ivory">
+            Форматы доступа
+          </h2>
+          <p class="mt-4 text-base sm:text-lg text-ivory-muted">
+            Выберите уровень интеграции советника в структуру вашего управления.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+          
+          <!-- Тариф 1: Разовая аудиенция -->
+          <div class="p-8 rounded-lg bg-charcoal border border-gold/20 flex flex-col justify-between hover:border-gold/50 transition-all">
+            <div>
+              <span class="text-xs font-mono uppercase tracking-widest text-gold/80">Стартовый формат</span>
+              <h3 class="mt-2 text-xl font-serif font-bold text-ivory">Разовая аудиенция</h3>
+              <p class="mt-2 text-xs text-ivory-muted min-h-[36px]">
+                Разобрать критический тупик здесь и сейчас.
+              </p>
+
+              <div class="mt-6 mb-6">
+                <span class="text-4xl font-serif font-bold text-ivory">$49</span>
+                <span class="text-xs text-ivory-muted font-mono"> / разовая сессия</span>
+              </div>
+
+              <ul class="space-y-3.5 text-xs text-ivory-muted border-t border-gold/15 pt-6">
+                <li class="flex items-center text-ivory">
+                  <i data-lucide="check" class="w-4 h-4 text-gold mr-2.5"></i>
+                  <span>1 аудиенция (30 минут hard timebox)</span>
+                </li>
+                <li class="flex items-center">
+                  <i data-lucide="check" class="w-4 h-4 text-gold mr-2.5"></i>
+                  <span>Экспорт итогов и протокола сессии</span>
+                </li>
+                <li class="flex items-center">
+                  <i data-lucide="check" class="w-4 h-4 text-gold mr-2.5"></i>
+                  <span>Текстовый терминал диалога</span>
+                </li>
+                <li class="flex items-center text-ivory-muted/60 line-through">
+                  <i data-lucide="x" class="w-4 h-4 text-ivory-muted/40 mr-2.5"></i>
+                  <span>Голосовой интерфейс</span>
+                </li>
+              </ul>
+            </div>
+
+            <button onclick="openAudienceModal('Разовая аудиенция ($49)')" class="mt-8 w-full py-3 px-4 rounded-sm bg-charcoalLight border border-gold/40 hover:bg-gold hover:text-graphite text-ivory text-xs font-semibold uppercase tracking-wider transition-all">
+              Начать аудит
+            </button>
+          </div>
+
+          <!-- Тариф 2: Стратегический советник (Хит) -->
+          <div class="p-8 rounded-lg bg-charcoal border-2 border-gold relative flex flex-col justify-between shadow-gold-glow transform md:-translate-y-2">
+            <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-gold-light via-gold to-gold-dark text-graphite text-[10px] font-mono font-bold uppercase tracking-widest rounded-full shadow">
+              Рекомендация для лидеров
+            </div>
+
+            <div>
+              <span class="text-xs font-mono uppercase tracking-widest text-gold">Постоянный темп</span>
+              <h3 class="mt-2 text-xl font-serif font-bold text-ivory">Стратегический советник</h3>
+              <p class="mt-2 text-xs text-ivory-muted min-h-[36px]">
+                Системный аудит решений месяц за месяцем.
+              </p>
+
+              <div class="mt-6 mb-6">
+                <span class="text-4xl font-serif font-bold text-gold">$190</span>
+                <span class="text-xs text-ivory-muted font-mono"> / в месяц</span>
+              </div>
+
+              <ul class="space-y-3.5 text-xs text-ivory border-t border-gold/25 pt-6">
+                <li class="flex items-center font-medium">
+                  <i data-lucide="check" class="w-4 h-4 text-gold mr-2.5"></i>
+                  <span>8 аудиенций в месяц (по 30 минут)</span>
+                </li>
+                <li class="flex items-center font-medium">
+                  <i data-lucide="check" class="w-4 h-4 text-gold mr-2.5"></i>
+                  <span>Commitments Engine: синхронизация и контроль динамики</span>
+                </li>
+                <li class="flex items-center font-medium">
+                  <i data-lucide="check" class="w-4 h-4 text-gold mr-2.5"></i>
+                  <span>Голос + Текст (RU/EN аудиоканал)</span>
+                </li>
+                <li class="flex items-center">
+                  <i data-lucide="check" class="w-4 h-4 text-gold mr-2.5"></i>
+                  <span>Сквозная синхронизация iPhone, iPad, Mac</span>
+                </li>
+              </ul>
+            </div>
+
+            <button onclick="openAudienceModal('Стратегический советник ($190/мес)')" class="mt-8 w-full py-3.5 px-4 rounded-sm bg-gradient-to-r from-gold-light via-gold to-gold-dark text-graphite text-xs font-bold uppercase tracking-wider hover:brightness-110 transition-all shadow-gold-glow">
+              Подключить кабинет
+            </button>
+          </div>
+
+          <!-- Тариф 3: Клуб Основателей (Годовой) -->
+          <div class="p-8 rounded-lg bg-charcoal border border-gold/20 flex flex-col justify-between hover:border-gold/50 transition-all">
+            <div>
+              <span class="text-xs font-mono uppercase tracking-widest text-gold/80">Максимальный статус</span>
+              <h3 class="mt-2 text-xl font-serif font-bold text-ivory">Клуб Основателей</h3>
+              <p class="mt-2 text-xs text-ivory-muted min-h-[36px]">
+                Постоянное присутствие наставника в совете.
+              </p>
+
+              <div class="mt-6 mb-6">
+                <span class="text-4xl font-serif font-bold text-ivory">$1,650</span>
+                <span class="text-xs text-ivory-muted font-mono"> / в год</span>
+              </div>
+
+              <ul class="space-y-3.5 text-xs text-ivory-muted border-t border-gold/15 pt-6">
+                <li class="flex items-center text-ivory font-medium">
+                  <i data-lucide="check" class="w-4 h-4 text-gold mr-2.5"></i>
+                  <span>Неограниченные аудиенции 24/7</span>
+                </li>
+                <li class="flex items-center text-ivory font-medium">
+                  <i data-lucide="check" class="w-4 h-4 text-gold mr-2.5"></i>
+                  <span>Полномочный трекинг личного наследия</span>
+                </li>
+                <li class="flex items-center text-ivory font-medium">
+                  <i data-lucide="check" class="w-4 h-4 text-gold mr-2.5"></i>
+                  <span>Приоритетная голосовая шифрованная линия</span>
+                </li>
+                <li class="flex items-center text-ivory">
+                  <i data-lucide="check" class="w-4 h-4 text-gold mr-2.5"></i>
+                  <span>Прямая техническая поддержка первого уровня</span>
+                </li>
+              </ul>
+            </div>
+
+            <button onclick="openAudienceModal('Клуб Основателей ($1,650/год)')" class="mt-8 w-full py-3 px-4 rounded-sm bg-charcoalLight border border-gold/40 hover:bg-gold hover:text-graphite text-ivory text-xs font-semibold uppercase tracking-wider transition-all">
+              Войти в совет
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 8. ЧЕСТНЫЕ ОТВЕТЫ НА ОСТРЫЕ ВОПРОСЫ (FAQ) -->
+    <section id="faq" class="py-20 md:py-32 bg-charcoal border-t border-gold/15 relative">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="text-center mb-16">
+          <span class="text-xs font-mono uppercase tracking-[0.25em] text-gold font-semibold">Прямой диалог</span>
+          <h2 class="mt-3 text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-ivory">
+            Честные ответы на острые вопросы
+          </h2>
+        </div>
+
+        <div class="space-y-4">
+          
+          <!-- Вопрос 1 -->
+          <div class="rounded-lg bg-graphite border border-gold/20 overflow-hidden transition-all">
+            <button onclick="toggleFaq(1)" class="w-full px-6 py-5 text-left flex items-center justify-between text-base sm:text-lg font-serif font-bold text-ivory hover:text-gold transition-colors">
+              <span>Почему сессия ограничена 30 минутами, а не идет до бесконечности?</span>
+              <i id="faq-icon-1" data-lucide="chevron-down" class="w-5 h-5 text-gold transform transition-transform duration-300"></i>
+            </button>
+            <div id="faq-answer-1" class="px-6 pb-6 text-sm text-ivory-muted leading-relaxed hidden">
+              Бесконечное время порождает лень, нытье и расфокусировку. В бизнесе побеждают те, кто способен за полчаса вскрыть проблему, утвердить директиву и приступить к действиям. Ограничение в 30 минут — это тренировочный полигон вашей управленческой собранности.
+            </div>
+          </div>
+
+          <!-- Вопрос 2 -->
+          <div class="rounded-lg bg-graphite border border-gold/20 overflow-hidden transition-all">
+            <button onclick="toggleFaq(2)" class="w-full px-6 py-5 text-left flex items-center justify-between text-base sm:text-lg font-serif font-bold text-ivory hover:text-gold transition-colors">
+              <span>Чем это отличается от обычного запроса к ChatGPT в стиле «Отвечай как бизнесмен»?</span>
+              <i id="faq-icon-2" data-lucide="chevron-down" class="w-5 h-5 text-gold transform transition-transform duration-300"></i>
+            </button>
+            <div id="faq-answer-2" class="px-6 pb-6 text-sm text-ivory-muted leading-relaxed hidden">
+              Обычный ChatGPT сглаживает углы, опирается на усредненный интернет и не обладает характером. Peter Daniels AI работает на изолированном массиве первоисточников: только аутентичные труды, живые разборы и бескомпромиссная система ценностей Питера Дэниелса. Он не ищет одобрения — он тестирует вашу позицию на прочность.
+            </div>
+          </div>
+
+          <!-- Вопрос 3 -->
+          <div class="rounded-lg bg-graphite border border-gold/20 overflow-hidden transition-all">
+            <button onclick="toggleFaq(3)" class="w-full px-6 py-5 text-left flex items-center justify-between text-base sm:text-lg font-serif font-bold text-ivory hover:text-gold transition-colors">
+              <span>Какие материалы оцифрованы в базе?</span>
+              <i id="faq-icon-3" data-lucide="chevron-down" class="w-5 h-5 text-gold transform transition-transform duration-300"></i>
+            </button>
+            <div id="faq-answer-3" class="px-6 pb-6 text-sm text-ivory-muted leading-relaxed hidden">
+              Ровно 12 книг Питера Дэниелса, 5 фундаментальных видеокурсов (34 урока) и 72 записи редких выступлений и закрытых семинаров. Каждая мысль, аналогия и требование выверены по этим первоисточникам без добавления сторонних фантазий.
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 9. ФИНАЛЬНЫЙ ЭКРАН -->
+    <section class="py-24 md:py-36 bg-graphite relative overflow-hidden text-center border-t border-gold/20">
+      
+      <!-- Portrait / Monogram Emblem Backdrop -->
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        
+        <div class="w-24 h-24 mx-auto rounded-full bg-charcoal border-2 border-gold flex items-center justify-center shadow-gold-glow mb-8 overflow-hidden relative group">
+          <!-- Fallback or Monogram -->
+          <img src="portrait_placeholder.jpg" alt="Peter Daniels" class="w-full h-full object-cover filter grayscale contrast-125 hover:scale-105 transition-transform duration-500" onerror="this.style.display='none'; document.getElementById('monogram-fallback').style.display='flex';">
+          <div id="monogram-fallback" class="hidden absolute inset-0 items-center justify-center bg-charcoal text-gold font-serif font-bold text-2xl">
+            PD
+          </div>
+        </div>
+
+        <h2 class="text-3xl sm:text-5xl md:text-6xl font-serif font-extrabold text-ivory tracking-tight leading-tight">
+          Хватит обсуждать проблемы. <br />
+          <span class="gold-gradient-text">Вы знаете, что нужно сделать.</span>
+        </h2>
+
+        <p class="mt-6 text-base sm:text-lg md:text-xl text-ivory-muted max-w-2xl mx-auto leading-relaxed">
+          Каждый день промедления стоит вам позиций, денег и уважения к самому себе. Оставьте пустые слова тем, кто боится масштабных решений.
+        </p>
+
+        <div class="mt-10">
+          <button onclick="openAudienceModal('Финальный экран - Аудиенция')" class="px-10 py-5 bg-gradient-to-r from-gold-light via-gold to-gold-dark text-graphite font-serif font-extrabold text-sm sm:text-base tracking-widest uppercase rounded-sm shadow-gold-glow hover:brightness-110 active:scale-95 transition-all">
+            Начать 30-минутную аудиенцию прямо сейчас →
+          </button>
+        </div>
+
+        <div class="mt-14 max-w-xl mx-auto border-t border-gold/20 pt-8">
+          <blockquote class="text-base sm:text-lg font-serif italic text-gold-light leading-relaxed">
+            «Слова стоят дешево. Цену имеют только обязательства и действия. Иди и победи!»
+          </blockquote>
+          <cite class="mt-3 block text-xs font-mono tracking-widest uppercase text-ivory-muted">
+            — Питер Дэниелс
+          </cite>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-charcoal border-t border-gold/15 py-10 relative z-10 text-xs text-ivory-muted">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center space-x-3">
+        <span class="font-serif font-bold text-gold tracking-widest">PETER DANIELS AI</span>
+        <span>•</span>
+        <span>Executive Intelligence System</span>
+      </div>
+      <div class="font-mono text-[11px] text-ivory-muted/70">
+        © 2026 Peter Daniels AI Legacy Archive. All Rights Reserved.
+      </div>
+      <div class="flex items-center space-x-4">
+        <a href="#protocol" class="hover:text-gold transition-colors">Регламент</a>
+        <a href="#pricing" class="hover:text-gold transition-colors">Тарифы</a>
+        <a href="#faq" class="hover:text-gold transition-colors">FAQ</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- MODAL: НАЗНАЧИТЬ АУДИЕНЦИЮ -->
+  <div id="audience-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="relative w-full max-w-md rounded-lg bg-charcoal border border-gold/40 shadow-gold-glow p-6 sm:p-8 overflow-hidden">
+      
+      <!-- Close Button -->
+      <button onclick="closeAudienceModal()" class="absolute top-4 right-4 text-ivory-muted hover:text-gold transition-colors">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <div class="flex items-center space-x-2 text-gold font-mono text-xs uppercase tracking-widest mb-2">
+        <i data-lucide="lock" class="w-3.5 h-3.5"></i>
+        <span>Закрытая сессия</span>
+      </div>
+
+      <h3 class="text-xl font-serif font-bold text-ivory mb-2" id="modal-tariff-title">
+        Назначить аудиенцию
+      </h3>
+      <p class="text-xs text-ivory-muted mb-6">
+        Укажите ваши реквизиты для открытия персональной сессии с советником.
+      </p>
+
+      <form id="audience-form" onsubmit="handleAudienceSubmit(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-mono uppercase tracking-wider text-ivory-muted mb-1.5">Ваше Имя</label>
+          <input type="text" required placeholder="Константин Романов" class="w-full px-3.5 py-2.5 rounded bg-graphite border border-gold/30 text-ivory text-sm focus:border-gold focus:outline-none transition-colors">
+        </div>
+
+        <div>
+          <label class="block text-xs font-mono uppercase tracking-wider text-ivory-muted mb-1.5">Telegram / WhatsApp / Телефон</label>
+          <input type="text" required placeholder="@username или +7 999 000-00-00" class="w-full px-3.5 py-2.5 rounded bg-graphite border border-gold/30 text-ivory text-sm focus:border-gold focus:outline-none transition-colors">
+        </div>
+
+        <div>
+          <label class="block text-xs font-mono uppercase tracking-wider text-ivory-muted mb-1.5">Email для ключа доступа</label>
+          <input type="email" required placeholder="ceo@company.com" class="w-full px-3.5 py-2.5 rounded bg-graphite border border-gold/30 text-ivory text-sm focus:border-gold focus:outline-none transition-colors">
+        </div>
+
+        <div>
+          <label class="block text-xs font-mono uppercase tracking-wider text-ivory-muted mb-1.5">Главный вызов (в 1 предложении)</label>
+          <input type="text" placeholder="Масштабирование / Партнеры / Кассовый разрыв" class="w-full px-3.5 py-2.5 rounded bg-graphite border border-gold/30 text-ivory text-sm focus:border-gold focus:outline-none transition-colors">
+        </div>
+
+        <button type="submit" class="w-full mt-2 py-3.5 bg-gradient-to-r from-gold-light via-gold to-gold-dark text-graphite font-serif font-bold text-xs uppercase tracking-widest rounded-sm hover:brightness-110 active:scale-95 transition-all shadow-gold-glow">
+          Подтвердить бронирование →
+        </button>
+
+        <p class="text-[10px] text-center text-ivory-muted/70 font-mono">
+          Данные защищены 256-битным протоколом сквозного шифрования.
+        </p>
+      </form>
+
+      <!-- Success State in Modal -->
+      <div id="modal-success" class="hidden text-center py-6 space-y-4">
+        <div class="w-12 h-12 mx-auto rounded-full bg-gold/10 border border-gold flex items-center justify-center text-gold">
+          <i data-lucide="check" class="w-6 h-6"></i>
+        </div>
+        <h4 class="text-lg font-serif font-bold text-ivory">Директива зафиксирована</h4>
+        <p class="text-xs text-ivory-muted leading-relaxed">
+          Запрос на аудиенцию передан в очередь терминала. Мы свяжемся с вами в течение 15 минут для подтверждения времени входа.
+        </p>
+        <button onclick="closeAudienceModal()" class="px-6 py-2.5 bg-charcoalLight border border-gold/40 text-gold text-xs uppercase font-mono tracking-wider rounded-sm hover:bg-gold hover:text-graphite transition-all">
+          Вернуться к терминалу
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Client-side Scripts -->
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+
+    // 1. Live countdown timer in hero section (28:14 counting down)
+    let totalSeconds = 28 * 60 + 14;
+    const timerElement = document.getElementById('hero-countdown');
+
+    setInterval(() => {
+      if (totalSeconds > 0) {
+        totalSeconds--;
+        const m = Math.floor(totalSeconds / 60);
+        const s = totalSeconds % 60;
+        timerElement.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+      } else {
+        timerElement.textContent = "00:00";
+      }
+    }, 1000);
+
+    // 2. Confetti trigger on Commitments Engine item
+    function triggerCommitmentConfetti(checkbox) {
+      if (checkbox.checked) {
+        confetti({
+          particleCount: 50,
+          spread: 60,
+          origin: { y: 0.6 },
+          colors: ['#C8A962', '#E5C987', '#FFFFFF', '#9E7E38']
+        });
+      }
+    }
+
+    // 3. FAQ Accordion logic
+    function toggleFaq(index) {
+      const answer = document.getElementById(`faq-answer-${index}`);
+      const icon = document.getElementById(`faq-icon-${index}`);
+      
+      if (answer.classList.contains('hidden')) {
+        answer.classList.remove('hidden');
+        icon.classList.add('rotate-180');
+      } else {
+        answer.classList.add('hidden');
+        icon.classList.remove('rotate-180');
+      }
+    }
+
+    // 4. Modal Window Controls
+    let currentTariff = 'Разовая аудиенция';
+
+    function openAudienceModal(tariffName) {
+      currentTariff = tariffName;
+      document.getElementById('modal-tariff-title').textContent = tariffName;
+      document.getElementById('audience-form').classList.remove('hidden');
+      document.getElementById('modal-success').classList.add('hidden');
+      const modal = document.getElementById('audience-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeAudienceModal() {
+      const modal = document.getElementById('audience-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function handleAudienceSubmit(e) {
+      e.preventDefault();
+      document.getElementById('audience-form').classList.add('hidden');
+      document.getElementById('modal-success').classList.remove('hidden');
+      
+      confetti({
+        particleCount: 80,
+        spread: 70,
+        origin: { y: 0.5 },
+        colors: ['#C8A962', '#F5F4F0', '#E5C987']
+      });
+    }
+
+    // Close on Escape or click outside
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeAudienceModal();
+    });
+    document.getElementById('audience-modal').addEventListener('click', (e) => {
+      if (e.target.id === 'audience-modal') closeAudienceModal();
+    });
+  </script>
+</body>
+</html>

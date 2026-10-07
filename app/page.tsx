@@ -48,7 +48,7 @@ interface ISpeechRecognition extends EventTarget {
   stop(): void;
   onresult: ((e: SpeechRecognitionEvent) => void) | null;
   onend: (() => void) | null;
-  onerror: (() => void) | null;
+  onerror: ((e?: any) => void) | null;
 }
 
 interface SpeechRecognitionEvent {
@@ -76,17 +76,31 @@ const THEME_KEY = 'peter_daniels_theme_v1';
 
 // Helper to extract numbered or bulleted action items from text
 function extractActionItems(text: string): string[] {
-  const lines = text.split('\n');
+  if (!text) return [];
+
+  // 1. Locate the commitment header section if present
+  const headerRegex = /(?:###\s*🎯?\s*(?:Твои\s+обязательства|Обязательства|Шаги-обязательства|Action\s+Commitments)|(?:обязательства\s+к\s+действию|шаги-обязательства|итог\s+и\s+план):?)/i;
+  const match = text.match(headerRegex);
+
+  // If there is an explicit header, parse strictly AFTER this header so questions in preamble are ignored
+  const targetText = match && match.index !== undefined ? text.slice(match.index) : text;
+
+  const lines = targetText.split('\n');
   const items: string[] = [];
   
   const itemPattern = /^(?:(?:\d+[\.\)]|\*|-|•)\s+)(.+)$/;
   
   for (const line of lines) {
     const trimmed = line.trim();
-    const match = trimmed.match(itemPattern);
-    if (match) {
-      let clean = match[1].trim();
-      if (clean.length > 15 && !clean.toLowerCase().startsWith('благослов') && !clean.toLowerCase().startsWith('напутств')) {
+    const lineMatch = trimmed.match(itemPattern);
+    if (lineMatch) {
+      let clean = lineMatch[1].trim();
+      if (
+        clean.length > 15 &&
+        !clean.toLowerCase().startsWith('благослов') &&
+        !clean.toLowerCase().startsWith('напутств') &&
+        !clean.toLowerCase().startsWith('вопрос')
+      ) {
         // Strip markdown bold/italic asterisks completely: ** or *
         clean = clean.replace(/\*+/g, '').replace(/^[0-9]+[\.\)]\s*/, '').trim();
         items.push(clean);
@@ -106,6 +120,59 @@ function extractActionItems(text: string): string[] {
   }
 
   return items.slice(0, 5); // limit to 5 candidate tasks
+}
+
+// Smart filter: check if message contains final Phase 3 action commitments
+function hasActionCommitments(text: string, msgIndex?: number, allMessages?: Message[]): boolean {
+  if (!text) return false;
+  const lower = text.toLowerCase();
+
+  // Strict commitment headers (Phase 3 Final Commitments or explicit Session Summary)
+  // NEVER trigger on solitary 🎯 emoji!
+  const hasDefinitiveCommitmentHeader =
+    lower.includes('обязательства к действию') ||
+    lower.includes('твои обязательства') ||
+    lower.includes('обязательства на сегодня') ||
+    lower.includes('шаги-обязательства') ||
+    lower.includes('action commitments') ||
+    lower.includes('commitments to execute') ||
+    lower.includes('итог и план:');
+
+  if (!hasDefinitiveCommitmentHeader) {
+    return false;
+  }
+
+  // Check turn stage: if this is the first assistant response, the user has not yet replied to Peter's diagnostic questions
+  if (allMessages && typeof msgIndex === 'number') {
+    const priorUserMessages = allMessages.slice(0, msgIndex).filter((m) => m.role === 'user');
+    if (priorUserMessages.length <= 1) {
+      const firstUserText = (priorUserMessages[0]?.content || '').toLowerCase();
+      const isExplicitSummaryRequest =
+        firstUserText.includes('итог') ||
+        firstUserText.includes('план') ||
+        firstUserText.includes('обязательств');
+      if (!isExplicitSummaryRequest) {
+        return false;
+      }
+    }
+  }
+
+  // If message is still asking for ongoing diagnostic / clarifying input:
+  const isContinuingDiscussion =
+    lower.includes('напиши мне его суть') ||
+    lower.includes('напиши мне суть') ||
+    lower.includes('ответь мне на три') ||
+    lower.includes('ответь мне на мои вопросы') ||
+    lower.includes('диагностических вопрос') ||
+    lower.includes('три диагностических') ||
+    lower.includes('жду твоего ответа');
+
+  if (isContinuingDiscussion && !lower.includes('обязательства к действию')) {
+    return false;
+  }
+
+  const items = extractActionItems(text);
+  return items.length > 0;
 }
 
 export default function ChatPage() {
@@ -225,25 +292,25 @@ export default function ChatPage() {
     notesData = personalNotes,
     email = authEmail
   ) => {
-    const k = (email || '').trim().toLowerCase();
-    if (!k) return;
-
-    let finalProfile = { ...profileData };
-    if (!finalProfile.name || !finalProfile.name.trim()) {
-      try {
-        const saved = localStorage.getItem(PROFILE_KEY);
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (parsed.name && parsed.name.trim()) {
-            finalProfile.name = parsed.name.trim();
-          }
-        }
-      } catch (e) {
-        // ignore
-      }
-    }
-
     try {
+      const k = (email || '').trim().toLowerCase();
+      if (!k) return;
+
+      let finalProfile = { ...profileData };
+      if (!finalProfile.name || !finalProfile.name.trim()) {
+        try {
+          const saved = localStorage.getItem(PROFILE_KEY);
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            if (parsed.name && parsed.name.trim()) {
+              finalProfile.name = parsed.name.trim();
+            }
+          }
+        } catch {
+          // ignore
+        }
+      }
+
       setSyncStatus('syncing');
       await fetch('/api/sync', {
         method: 'POST',
@@ -261,6 +328,39 @@ export default function ChatPage() {
       setSyncStatus('offline');
     }
   };
+
+  // Global browser event & unhandled rejection safety shield
+  useEffect(() => {
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      // Suppress unhandled browser Event rejections (e.g. SpeechRecognitionErrorEvent, network Abort, DOM Events)
+      if (
+        !event.reason ||
+        event.reason instanceof Event ||
+        (typeof event.reason === 'object' && !('message' in event.reason) && !('stack' in event.reason))
+      ) {
+        event.preventDefault();
+        event.stopPropagation();
+        console.warn('Safely prevented unhandled Event rejection:', event.reason);
+      }
+    };
+
+    const handleGlobalError = (event: ErrorEvent) => {
+      if (
+        !event.error &&
+        (event.message === 'Script error.' || typeof event.message !== 'string' || !event.message)
+      ) {
+        event.preventDefault();
+      }
+    };
+
+    window.addEventListener('unhandledrejection', handleUnhandledRejection, true);
+    window.addEventListener('error', handleGlobalError, true);
+
+    return () => {
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection, true);
+      window.removeEventListener('error', handleGlobalError, true);
+    };
+  }, []);
 
   // 0. Theme initialization & toggle
   useEffect(() => {
@@ -365,15 +465,19 @@ export default function ChatPage() {
 
   // 2. Persist state
   useEffect(() => {
-    if (conversations.length > 0) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(conversations));
-      if (authEmail) {
-        if (skipNextAutoPushRef.current) {
-          skipNextAutoPushRef.current = false;
-          return;
+    try {
+      if (conversations.length > 0) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(conversations));
+        if (authEmail) {
+          if (skipNextAutoPushRef.current) {
+            skipNextAutoPushRef.current = false;
+            return;
+          }
+          pushToCloud(userProfile, conversations, commitments, personalNotes, authEmail).catch(() => {});
         }
-        pushToCloud(userProfile, conversations, commitments, personalNotes, authEmail);
       }
+    } catch (err) {
+      console.warn('Persist error:', err);
     }
   }, [conversations, authEmail]);
 
@@ -453,21 +557,33 @@ export default function ChatPage() {
   };
 
   const saveProfile = (updated: UserProfile) => {
-    setUserProfile(updated);
-    localStorage.setItem(PROFILE_KEY, JSON.stringify(updated));
-    pushToCloud(updated, conversations, commitments, personalNotes);
+    try {
+      setUserProfile(updated);
+      localStorage.setItem(PROFILE_KEY, JSON.stringify(updated));
+      pushToCloud(updated, conversations, commitments, personalNotes).catch(() => {});
+    } catch (e) {
+      console.warn('saveProfile error:', e);
+    }
   };
 
   const saveNotes = (updated: PersonalNote[]) => {
-    setPersonalNotes(updated);
-    localStorage.setItem(NOTES_KEY, JSON.stringify(updated));
-    pushToCloud(userProfile, conversations, commitments, updated);
+    try {
+      setPersonalNotes(updated);
+      localStorage.setItem(NOTES_KEY, JSON.stringify(updated));
+      pushToCloud(userProfile, conversations, commitments, updated).catch(() => {});
+    } catch (e) {
+      console.warn('saveNotes error:', e);
+    }
   };
 
   const saveCommitments = (updated: Commitment[]) => {
-    setCommitments(updated);
-    localStorage.setItem(COMMITMENTS_KEY, JSON.stringify(updated));
-    pushToCloud(userProfile, conversations, updated, personalNotes);
+    try {
+      setCommitments(updated);
+      localStorage.setItem(COMMITMENTS_KEY, JSON.stringify(updated));
+      pushToCloud(userProfile, conversations, updated, personalNotes).catch(() => {});
+    } catch (e) {
+      console.warn('saveCommitments error:', e);
+    }
   };
 
   const addCommitment = (text: string) => {
@@ -609,34 +725,56 @@ export default function ChatPage() {
   };
 
   const toggleVoice = () => {
-    const SpeechRec: SpeechRecognitionConstructor | undefined =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRec) {
-      alert('Your browser does not support voice input. Try Chrome or Safari.');
-      return;
-    }
+    try {
+      const SpeechRec: SpeechRecognitionConstructor | undefined =
+        window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRec) {
+        alert('Your browser does not support voice input. Try Chrome or Safari.');
+        return;
+      }
 
-    if (isListening) {
-      recognitionRef.current?.stop();
+      if (isListening) {
+        try {
+          recognitionRef.current?.stop();
+        } catch {
+          // ignore
+        }
+        setIsListening(false);
+        return;
+      }
+
+      const rec: ISpeechRecognition = new SpeechRec();
+      rec.lang = lang === 'ru' ? 'ru-RU' : 'en-US';
+      rec.continuous = false;
+      rec.interimResults = false;
+
+      rec.onresult = (e: SpeechRecognitionEvent) => {
+        try {
+          const transcript = e.results[0][0].transcript;
+          setInput((prev) => prev + (prev ? ' ' : '') + transcript);
+        } catch {
+          // ignore
+        }
+      };
+      rec.onend = () => setIsListening(false);
+      rec.onerror = (e) => {
+        if (e && typeof (e as any).preventDefault === 'function') {
+          try {
+            (e as any).preventDefault();
+          } catch {
+            // ignore
+          }
+        }
+        setIsListening(false);
+      };
+
+      recognitionRef.current = rec;
+      rec.start();
+      setIsListening(true);
+    } catch (err) {
+      console.warn('Voice input error:', err);
       setIsListening(false);
-      return;
     }
-
-    const rec: ISpeechRecognition = new SpeechRec();
-    rec.lang = lang === 'ru' ? 'ru-RU' : 'en-US';
-    rec.continuous = false;
-    rec.interimResults = false;
-
-    rec.onresult = (e: SpeechRecognitionEvent) => {
-      const transcript = e.results[0][0].transcript;
-      setInput((prev) => prev + (prev ? ' ' : '') + transcript);
-    };
-    rec.onend = () => setIsListening(false);
-    rec.onerror = () => setIsListening(false);
-
-    recognitionRef.current = rec;
-    rec.start();
-    setIsListening(true);
   };
 
   const handleCopy = (content: string, index: number) => {
@@ -792,34 +930,34 @@ export default function ChatPage() {
   };
 
   const sendMessage = async () => {
-    const text = input.trim();
-    if (!text || isLoading) return;
-
-    const userMsg: Message = { role: 'user', content: text };
-    const updatedMessages = [...messages, userMsg];
-
-    const autoTitle =
-      messages.length === 0
-        ? text.slice(0, 30) + (text.length > 30 ? '...' : '')
-        : currentConv.title;
-
-    setConversations((prev) =>
-      prev.map((c) =>
-        c.id === activeId
-          ? {
-              ...c,
-              title: autoTitle,
-              messages: updatedMessages,
-              updatedAt: Date.now(),
-            }
-          : c
-      )
-    );
-
-    setInput('');
-    setIsLoading(true);
-
     try {
+      const text = input.trim();
+      if (!text || isLoading) return;
+
+      const userMsg: Message = { role: 'user', content: text };
+      const updatedMessages = [...messages, userMsg];
+
+      const autoTitle =
+        messages.length === 0
+          ? text.slice(0, 30) + (text.length > 30 ? '...' : '')
+          : currentConv.title;
+
+      setConversations((prev) =>
+        prev.map((c) =>
+          c.id === activeId
+            ? {
+                ...c,
+                title: autoTitle,
+                messages: updatedMessages,
+                updatedAt: Date.now(),
+              }
+            : c
+        )
+      );
+
+      setInput('');
+      setIsLoading(true);
+
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -848,7 +986,8 @@ export default function ChatPage() {
             : c
         )
       );
-    } catch {
+    } catch (err) {
+      console.error('SendMessage error:', err);
       const errorMsg: Message = {
         role: 'assistant',
         content:
@@ -859,7 +998,7 @@ export default function ChatPage() {
       setConversations((prev) =>
         prev.map((c) =>
           c.id === activeId
-            ? { ...c, messages: [...updatedMessages, errorMsg] }
+            ? { ...c, messages: [...c.messages, errorMsg] }
             : c
         )
       );
@@ -1737,19 +1876,23 @@ export default function ChatPage() {
 
                       {/* Message Actions */}
                       <div className="pt-2 border-t flex items-center justify-between" style={{ borderColor: 'var(--border)' }}>
-                        <button
-                          onClick={() => openCommitmentReview(msg.content)}
-                          className="text-[11px] transition-colors flex items-center gap-1.5 px-2 py-1 rounded-md"
-                          style={{
-                            background: 'var(--card-highlight)',
-                            border: '1px solid var(--border)',
-                            color: 'var(--accent)',
-                          }}
-                          title={lang === 'ru' ? 'Выбрать шаги и принять на себя обязательства' : 'Choose action steps and accept commitments'}
-                        >
-                          <span>🎯</span>
-                          <span>{lang === 'ru' ? 'Выбрать обязательства' : 'Select Commitments'}</span>
-                        </button>
+                        {hasActionCommitments(msg.content, i, messages) ? (
+                          <button
+                            onClick={() => openCommitmentReview(msg.content)}
+                            className="pulse-gold-btn text-xs font-semibold flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer shadow-md"
+                            style={{
+                              background: 'var(--accent)',
+                              color: '#000000',
+                              border: '1px solid rgba(255, 255, 255, 0.25)',
+                            }}
+                            title={lang === 'ru' ? 'Выбрать шаги и принять на себя обязательства' : 'Choose action steps and accept commitments'}
+                          >
+                            <span className="text-sm">🎯</span>
+                            <span className="font-bold">{lang === 'ru' ? 'Взять на себя обязательства' : 'Accept Commitments'}</span>
+                          </button>
+                        ) : (
+                          <div />
+                        )}
 
                         <button
                           onClick={() => handleCopy(msg.content, i)}
