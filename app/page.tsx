@@ -1432,7 +1432,7 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: 'var(--background)' }}>
+    <div className="flex h-screen h-[100dvh] overflow-hidden" style={{ background: 'var(--background)' }}>
       {/* Sidebar */}
       <aside
         className={`fixed inset-y-0 left-0 z-30 w-72 flex flex-col transition-transform duration-300 md:static md:translate-x-0 ${
@@ -1609,7 +1609,7 @@ export default function ChatPage() {
       <div className="flex-1 flex flex-col h-full min-w-0">
         {/* Header */}
         <header
-          className="flex items-center justify-between px-3 md:px-6 py-3 border-b gap-2"
+          className="flex-shrink-0 flex items-center justify-between px-3 md:px-6 py-3 border-b gap-2"
           style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
         >
           <div className="flex items-center gap-2.5 min-w-0">
@@ -2026,7 +2026,7 @@ export default function ChatPage() {
 
         {/* Input area */}
         <footer
-          className="px-4 py-3.5 border-t"
+          className="flex-shrink-0 z-20 px-4 py-3.5 border-t"
           style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
         >
           <div className="max-w-3xl mx-auto">

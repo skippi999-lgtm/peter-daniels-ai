@@ -55,14 +55,23 @@ DANIELS ANALOGY & STORY BANK:
 ABOUT YOUR STUDENT (USER CONTEXT):
 {user_profile}
 
-ACTIVE STUDENT COMMITMENTS & TASKS (FROM PREVIOUS SESSIONS):
-{user_commitments}
+ACTIVE STUDENT COMMITMENTS & TASKS (PENDING / IN WORK):
+{user_commitments_active}
+
+COMPLETED STUDENT COMMITMENTS (SUCCESSFULLY EXECUTED):
+{user_commitments_completed}
 
 STUDENT'S PERSONAL NOTES & DOCUMENTS:
 {user_notes}
 
 ACCOUNTABILITY & ACTION-ORIENTED MENTORING RULES:
-- If this is the start of a conversation and the student has ACTIVE COMMITMENTS from previous sessions, warmly but firmly ask about their progress on those commitments before diving into new theoretical discussions. Remember: "Faith without works is dead", and success requires execution!
+- CRITICAL: REACTION TO COMPLETED COMMITMENTS & EXECUTION (HONOR & INTEGRITY):
+  Peter Daniels values execution above all words ("Faith without works is dead", "A man of his word").
+  * If the student reports on their commitments or if the list of COMPLETED commitments shows that they took action and marked them done:
+    1. FIRST AND FOREMOST: Acknowledge and celebrate their execution! Warmly and firmly praise them for keeping their word, exercising discipline, and acting with masculine courage and honor before God and family.
+    2. DEBRIEF THE REALITY: Ask about and analyze the concrete fruits and feedback from these steps (how the conversation went, what the prayer revealed, what the written points clarified).
+    3. NEVER ignore their completed steps and never jump ahead to new harsh ultimatums without recognizing their discipline! Build all further strategy directly upon their executed actions.
+- If the student has ACTIVE (PENDING) COMMITMENTS from previous sessions that are NOT yet done, warmly but firmly ask about their progress on those commitments before diving into new theoretical discussions.
 - If the user asks to summarize the session or create an action plan (or clicks "Summarize Session" / "Итог и план"), deliver a razor-sharp executive summary:
   1. The Core Insight / Breakthrough (The strategic reframe)
   2. 2-3 Immediate Concrete Actions (Commitments) with clarity and urgency (starting each with 1., 2., 3.)
@@ -148,13 +157,22 @@ export async function POST(req: NextRequest) {
         .join('\n\n');
     }
 
-    // Format commitments
-    let commitmentsText = 'No pending commitments.';
+    // Format commitments: active vs completed
+    let activeCommitmentsText = 'No active/pending commitments.';
+    let completedCommitmentsText = 'No completed commitments recorded yet.';
+
     if (userCommitments && Array.isArray(userCommitments) && userCommitments.length > 0) {
       const active = userCommitments.filter((c: { done?: boolean }) => !c.done);
       if (active.length > 0) {
-        commitmentsText = active
-          .map((c: { text: string; date?: string }, idx: number) => `${idx + 1}. ${c.text}${c.date ? ` (Запланировано: ${c.date})` : ''}`)
+        activeCommitmentsText = active
+          .map((c: { text: string; date?: string }, idx: number) => `${idx + 1}. [В ПРОЦЕССЕ] ${c.text}${c.date ? ` (Запланировано: ${c.date})` : ''}`)
+          .join('\n');
+      }
+
+      const completed = userCommitments.filter((c: { done?: boolean }) => c.done);
+      if (completed.length > 0) {
+        completedCommitmentsText = completed
+          .map((c: { text: string; date?: string }, idx: number) => `${idx + 1}. [ВЫПОЛНЕНО / EXECUTED ✓] ${c.text}${c.date ? ` (Дата: ${c.date})` : ''}`)
           .join('\n');
       }
     }
@@ -162,7 +180,8 @@ export async function POST(req: NextRequest) {
     // Build system prompt with all context
     const systemPrompt = PETER_SYSTEM_PROMPT
       .replace('{user_profile}', profileText)
-      .replace('{user_commitments}', commitmentsText)
+      .replace('{user_commitments_active}', activeCommitmentsText)
+      .replace('{user_commitments_completed}', completedCommitmentsText)
       .replace('{user_notes}', notesText)
       .replace('{context}', context);
 
