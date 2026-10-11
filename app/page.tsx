@@ -7,6 +7,7 @@ import confetti from 'canvas-confetti';
 type Message = {
   role: 'user' | 'assistant';
   content: string;
+  isCommitmentAccepted?: boolean;
 };
 
 type Conversation = {
@@ -175,6 +176,24 @@ function hasActionCommitments(text: string, msgIndex?: number, allMessages?: Mes
   return items.length > 0;
 }
 
+// Check whether commitments from a given assistant message were already accepted
+function isMessageCommitted(msg: Message, commitments: Commitment[]): boolean {
+  if (msg.isCommitmentAccepted) return true;
+  if (!commitments || commitments.length === 0) return false;
+
+  const items = extractActionItems(msg.content);
+  if (items.length === 0) return false;
+
+  return items.some((item) => {
+    const cleanItem = item.toLowerCase().replace(/[^a-zа-я0-9]/gi, '').slice(0, 30);
+    if (!cleanItem) return false;
+    return commitments.some((c) => {
+      const cleanCommit = c.text.toLowerCase().replace(/[^a-zа-я0-9]/gi, '');
+      return cleanCommit.includes(cleanItem) || cleanItem.includes(cleanCommit.slice(0, 30));
+    });
+  });
+}
+
 export default function ChatPage() {
   // Theme State
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
@@ -214,6 +233,7 @@ export default function ChatPage() {
   const [proposedCommitments, setProposedCommitments] = useState<{ id: string; text: string; selected: boolean }[]>([]);
   const [isCelebrationOpen, setIsCelebrationOpen] = useState(false);
   const [celebratedCount, setCelebratedCount] = useState(0);
+  const [activeReviewMsgIndex, setActiveReviewMsgIndex] = useState<number | null>(null);
 
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -608,7 +628,8 @@ export default function ChatPage() {
   };
 
   // Open commitment selection modal for an assistant message
-  const openCommitmentReview = (text: string) => {
+  const openCommitmentReview = (text: string, msgIndex?: number) => {
+    setActiveReviewMsgIndex(typeof msgIndex === 'number' ? msgIndex : null);
     const items = extractActionItems(text);
     if (items.length === 0) {
       // Fallback: entire text or single task
@@ -638,6 +659,22 @@ export default function ChatPage() {
       saveCommitments([...newItems, ...commitments]);
       setCelebratedCount(chosen.length);
       setIsCommitSelectionModalOpen(false);
+
+      if (activeReviewMsgIndex !== null) {
+        setConversations((prev) =>
+          prev.map((c) =>
+            c.id === activeId
+              ? {
+                  ...c,
+                  messages: c.messages.map((m, idx) =>
+                    idx === activeReviewMsgIndex ? { ...m, isCommitmentAccepted: true } : m
+                  ),
+                  updatedAt: Date.now(),
+                }
+              : c
+          )
+        );
+      }
 
       // Trigger Confetti Celebration 🎉
       try {
@@ -874,7 +911,7 @@ export default function ChatPage() {
 
       // Automatically offer to review commitments for summary
       setTimeout(() => {
-        openCommitmentReview(data.reply);
+        openCommitmentReview(data.reply, updatedMessages.length);
       }, 600);
     } catch {
       const errorMsg: Message = {
@@ -904,7 +941,8 @@ export default function ChatPage() {
       // Find the last assistant message with commitments
       const lastBotMsg = [...messages].reverse().find((m) => m.role === 'assistant');
       if (lastBotMsg) {
-        openCommitmentReview(lastBotMsg.content);
+        const lastBotIdx = messages.lastIndexOf(lastBotMsg);
+        openCommitmentReview(lastBotMsg.content, lastBotIdx);
         return;
       }
     }
@@ -1877,19 +1915,39 @@ export default function ChatPage() {
                       {/* Message Actions */}
                       <div className="pt-2 border-t flex items-center justify-between" style={{ borderColor: 'var(--border)' }}>
                         {hasActionCommitments(msg.content, i, messages) ? (
-                          <button
-                            onClick={() => openCommitmentReview(msg.content)}
-                            className="pulse-gold-btn text-xs font-semibold flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer shadow-md"
-                            style={{
-                              background: 'var(--accent)',
-                              color: '#000000',
-                              border: '1px solid rgba(255, 255, 255, 0.25)',
-                            }}
-                            title={lang === 'ru' ? 'Выбрать шаги и принять на себя обязательства' : 'Choose action steps and accept commitments'}
-                          >
-                            <span className="text-sm">🎯</span>
-                            <span className="font-bold">{lang === 'ru' ? 'Взять на себя обязательства' : 'Accept Commitments'}</span>
-                          </button>
+                          isMessageCommitted(msg, commitments) ? (
+                            <button
+                              onClick={() => setIsSidebarOpen(true)}
+                              className="text-xs font-semibold flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer shadow-sm opacity-95 hover:opacity-100"
+                              style={{
+                                background: 'var(--surface-2)',
+                                color: 'var(--accent)',
+                                border: '1px solid var(--accent)',
+                              }}
+                              title={
+                                lang === 'ru'
+                                  ? 'Обязательства приняты и добавлены в план. Нажмите, чтобы открыть меню обязательств.'
+                                  : 'Commitments accepted and added to plan. Click to open commitments sidebar.'
+                              }
+                            >
+                              <span>✅</span>
+                              <span>{lang === 'ru' ? 'Обязательства приняты' : 'Commitments Accepted'}</span>
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => openCommitmentReview(msg.content, i)}
+                              className="pulse-gold-btn text-xs font-semibold flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer shadow-md"
+                              style={{
+                                background: 'var(--accent)',
+                                color: '#000000',
+                                border: '1px solid rgba(255, 255, 255, 0.25)',
+                              }}
+                              title={lang === 'ru' ? 'Выбрать шаги и принять на себя обязательства' : 'Choose action steps and accept commitments'}
+                            >
+                              <span className="text-sm">🎯</span>
+                              <span className="font-bold">{lang === 'ru' ? 'Взять на себя обязательства' : 'Accept Commitments'}</span>
+                            </button>
+                          )
                         ) : (
                           <div />
                         )}
